@@ -18,8 +18,8 @@ const ATLANTA_COUNTIES = [
 
 export default function Leads() {
   const [filters, setFilters] = useState({
-    county: "",
-    safetyVertical: "",
+    county: "all",
+    safetyVertical: "all",
     searchQuery: "",
     duplicatesOnly: false,
     minEmployees: undefined as number | undefined,
@@ -30,8 +30,8 @@ export default function Leads() {
 
   const { data, isLoading, refetch } = trpc.leads.getAccounts.useQuery({
     ...filters,
-    county: filters.county || undefined,
-    safetyVertical: filters.safetyVertical as any || undefined,
+    county: filters.county === "all" ? undefined : filters.county,
+    safetyVertical: filters.safetyVertical === "all" ? undefined : (filters.safetyVertical as any),
     searchQuery: filters.searchQuery || undefined,
     limit: pageSize,
     offset: page * pageSize,
@@ -66,8 +66,8 @@ export default function Leads() {
 
   const handleExport = () => {
     exportMutation.mutate({
-      county: filters.county || undefined,
-      safetyVertical: filters.safetyVertical as any || undefined,
+      county: filters.county === "all" ? undefined : filters.county,
+      safetyVertical: filters.safetyVertical === "all" ? undefined : (filters.safetyVertical as any),
       searchQuery: filters.searchQuery || undefined,
       duplicatesOnly: filters.duplicatesOnly || undefined,
       minEmployees: filters.minEmployees,
@@ -82,8 +82,8 @@ export default function Leads() {
 
   const clearFilters = () => {
     setFilters({
-      county: "",
-      safetyVertical: "",
+      county: "all",
+      safetyVertical: "all",
       searchQuery: "",
       duplicatesOnly: false,
       minEmployees: undefined,
@@ -161,7 +161,7 @@ export default function Leads() {
                     <SelectValue placeholder="All counties" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All counties</SelectItem>
+                    <SelectItem value="all">All counties</SelectItem>
                     {ATLANTA_COUNTIES.map(county => (
                       <SelectItem key={county} value={county}>{county}</SelectItem>
                     ))}
@@ -177,7 +177,7 @@ export default function Leads() {
                     <SelectValue placeholder="All verticals" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All verticals</SelectItem>
+                    <SelectItem value="all">All verticals</SelectItem>
                     <SelectItem value="FirstAidSafety">First Aid & Safety</SelectItem>
                     <SelectItem value="FireProtection">Fire Protection</SelectItem>
                     <SelectItem value="Both">Both</SelectItem>

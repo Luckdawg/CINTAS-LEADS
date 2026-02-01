@@ -75,3 +75,8 @@
 - [x] Add logo to dashboard header
 - [x] Update page titles and branding text
 - [x] Apply CINTAS color scheme throughout UI
+
+## Critical Bug Fix - Empty Select Values
+- [x] Find all Select components with empty string values
+- [x] Replace empty string "" with placeholder value "all" or "none"
+- [x] Test all Select dropdowns to ensure no errors
