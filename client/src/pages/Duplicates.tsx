@@ -21,8 +21,9 @@ export default function Duplicates() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Duplicate Analysis</h1>
+            <img src="/cintas-logo.png" alt="CINTAS" className="h-12" />
+            <div className="border-l-2 border-border pl-4">
+              <h1 className="text-2xl font-bold text-foreground">Duplicate Analysis</h1>
               <p className="text-muted-foreground mt-1">
                 Review potential duplicate leads for data quality
               </p>

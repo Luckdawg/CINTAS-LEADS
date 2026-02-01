@@ -30,13 +30,16 @@ export default function Dashboard() {
       <div className="border-b bg-card">
         <div className="container py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                CINTAS Atlanta Metro Lead Generation
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                First Aid & Safety + Fire Protection Services
-              </p>
+            <div className="flex items-center gap-6">
+              <img src="/cintas-logo.png" alt="CINTAS" className="h-16" />
+              <div className="border-l-2 border-border pl-6">
+                <h1 className="text-2xl font-bold text-foreground">
+                  Atlanta Metro Lead Generation
+                </h1>
+                <p className="text-muted-foreground mt-1">
+                  First Aid & Safety + Fire Protection Services
+                </p>
+              </div>
             </div>
             <div className="flex gap-3">
               <Link href="/leads">

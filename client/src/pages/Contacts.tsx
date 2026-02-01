@@ -27,8 +27,9 @@ export default function Contacts() {
                 <ArrowLeft className="h-5 w-5" />
               </Button>
             </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Decision Maker Contacts</h1>
+            <img src="/cintas-logo.png" alt="CINTAS" className="h-12" />
+            <div className="border-l-2 border-border pl-4">
+              <h1 className="text-2xl font-bold text-foreground">Decision Maker Contacts</h1>
               <p className="text-muted-foreground mt-1">
                 Safety and operations contacts for each business
               </p>
