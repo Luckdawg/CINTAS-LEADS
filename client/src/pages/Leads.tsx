@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Download, Search, Filter, ExternalLink, ArrowLeft } from "lucide-react";
+import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 
@@ -34,6 +34,8 @@ export default function Leads() {
     maxEmployees: undefined as number | undefined,
   });
   const [page, setPage] = useState(0);
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedData, setEditedData] = useState<any>({});
   const pageSize = 50;
@@ -109,6 +111,51 @@ export default function Leads() {
     });
     setPage(0);
   };
+
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
+    return sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+  };
+
+  // Sort data client-side
+  const sortedData = useMemo(() => {
+    if (!data?.accounts || !sortBy) return data?.accounts || [];
+    
+    const sorted = [...data.accounts].sort((a, b) => {
+      let aVal: any = a[sortBy as keyof typeof a];
+      let bVal: any = b[sortBy as keyof typeof b];
+      
+      // Handle null/undefined
+      if (aVal == null) return 1;
+      if (bVal == null) return -1;
+      
+      // Handle numbers
+      if (typeof aVal === 'number' && typeof bVal === 'number') {
+        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+      }
+      
+      // Handle strings
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+      
+      if (sortDirection === 'asc') {
+        return aStr < bStr ? -1 : aStr > bStr ? 1 : 0;
+      } else {
+        return bStr < aStr ? -1 : bStr > aStr ? 1 : 0;
+      }
+    });
+    
+    return sorted;
+  }, [data?.accounts, sortBy, sortDirection]);
 
   const updateMutation = trpc.leads.updateAccount.useMutation({
     onSuccess: () => {
@@ -326,20 +373,55 @@ export default function Leads() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Company Name</TableHead>
-                      <TableHead>Address</TableHead>
-                      <TableHead>City</TableHead>
-                      <TableHead>ZIP</TableHead>
-                      <TableHead>Product Lines</TableHead>
-                      <TableHead>Employees</TableHead>
-                      <TableHead>Phone</TableHead>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold">
+                          Company Name
+                          {getSortIcon('companyName')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('address')} className="-ml-3 h-8 font-semibold">
+                          Address
+                          {getSortIcon('address')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('city')} className="-ml-3 h-8 font-semibold">
+                          City
+                          {getSortIcon('city')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('zipCode')} className="-ml-3 h-8 font-semibold">
+                          ZIP
+                          {getSortIcon('zipCode')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('productLines')} className="-ml-3 h-8 font-semibold">
+                          Product Lines
+                          {getSortIcon('productLines')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('employeeCountEstimated')} className="-ml-3 h-8 font-semibold">
+                          Employees
+                          {getSortIcon('employeeCountEstimated')}
+                        </Button>
+                      </TableHead>
+                      <TableHead>
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold">
+                          Phone
+                          {getSortIcon('phone')}
+                        </Button>
+                      </TableHead>
                       <TableHead>Links</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="sticky right-0 bg-background">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data?.accounts.map((account) => {
+                    {sortedData.map((account) => {
                       const isEditing = editingId === account.id;
                       return (
                       <TableRow key={account.id} className={account.possibleDuplicate ? "bg-yellow-50" : ""}>

@@ -175,3 +175,11 @@
 - [x] Verify all contact fields are editable
 - [x] Test save functionality works correctly
 - [x] Verify cancel functionality restores original values
+
+## Leads Page Column Sorting
+- [x] Add sorting state management (sortBy, sortDirection)
+- [x] Implement clickable column headers with sort indicators
+- [x] Add visual indicators (up/down arrows) for active sort column
+- [x] Implement client-side sorting for all columns
+- [x] Test sorting on all column types (text, number, date)
+- [x] Ensure sorting works with pagination
