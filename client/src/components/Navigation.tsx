@@ -17,20 +17,18 @@ export default function Navigation() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo/Brand */}
-          <Link href="/">
-            <a className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity">
-              <div className="bg-white p-2 rounded-lg shadow-md">
-                <img 
-                  src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cintas_logo.svg/320px-Cintas_logo.svg.png" 
-                  alt="CINTAS" 
-                  className="h-6 w-auto"
-                />
-              </div>
-              <div className="hidden sm:block">
-                <div className="text-lg font-bold">Western Georgia</div>
-                <div className="text-xs text-blue-100">Lead Generation Dashboard</div>
-              </div>
-            </a>
+          <Link href="/" className="flex items-center gap-3 text-white hover:opacity-90 transition-opacity">
+            <div className="bg-white p-2 rounded-lg shadow-md">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Cintas_logo.svg/320px-Cintas_logo.svg.png" 
+                alt="CINTAS" 
+                className="h-6 w-auto"
+              />
+            </div>
+            <div className="hidden sm:block">
+              <div className="text-lg font-bold">Western Georgia</div>
+              <div className="text-xs text-blue-100">Lead Generation Dashboard</div>
+            </div>
           </Link>
 
           {/* Navigation Links */}
