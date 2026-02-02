@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown, Building2, MapPin, Phone, Mail, User, Award } from "lucide-react";
 import { Link } from "wouter";
+import Navigation from "@/components/Navigation";
 
 export default function Contacts() {
   const [page, setPage] = useState(0);
@@ -109,24 +110,16 @@ export default function Contacts() {
   }, [contactsData, sortBy, sortDirection]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container py-6">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <img src="/cintas-logo.png" alt="CINTAS" className="h-12" />
-            <div className="border-l-2 border-border pl-4">
-              <h1 className="text-2xl font-bold text-foreground">Decision Maker Contacts</h1>
-              <p className="text-muted-foreground mt-1">
-                Safety and operations contacts for each business
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Navigation />
+      
+      {/* Page Header */}
+      <div className="border-b bg-white/80 backdrop-blur-sm shadow-sm">
+        <div className="container py-4">
+          <h1 className="text-2xl font-bold text-gray-900">Decision Maker Contacts</h1>
+          <p className="text-gray-600 mt-1">
+            Safety and operations contacts for each business
+          </p>
         </div>
       </div>
 

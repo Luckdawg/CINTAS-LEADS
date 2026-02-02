@@ -3,13 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Building2, Users, AlertTriangle, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
+import Navigation from "@/components/Navigation";
 
 export default function Dashboard() {
   const { data: stats, isLoading } = trpc.leads.getStatistics.useQuery();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <Navigation />
         <div className="container py-8">
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-muted rounded w-1/3"></div>
@@ -25,39 +27,18 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <img src="/cintas-logo.png" alt="CINTAS" className="h-16" />
-              <div className="border-l-2 border-border pl-6">
-                <h1 className="text-2xl font-bold text-foreground">
-                  Western Georgia Lead Generation
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  First Aid & Safety Services - West of I-75
-                </p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <Link href="/leads">
-                <Button variant="outline">View All Leads</Button>
-              </Link>
-              <Link href="/contacts">
-                <Button variant="outline">View Contacts</Button>
-              </Link>
-              <Link href="/duplicates">
-                <Button variant="outline">View Duplicates</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Navigation />
+      
       <div className="container py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Dashboard Overview
+          </h1>
+          <p className="text-gray-600">
+            Track your lead generation performance and key metrics
+          </p>
+        </div>
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card className="cursor-pointer hover:bg-accent transition-colors" onClick={() => window.location.href = '/leads'}>

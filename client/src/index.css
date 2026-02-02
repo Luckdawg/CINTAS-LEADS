@@ -44,9 +44,10 @@
 
 :root {
   /* CINTAS Brand Colors: Navy Blue #1E3A8A (primary), Red #B91C1C (accent) */
-  --cintas-navy: oklch(0.30 0.08 264);
-  --cintas-red: oklch(0.45 0.22 25);
-  --primary: var(--cintas-navy);
+  --cintas-navy: oklch(0.38 0.12 264);
+  --cintas-red: oklch(0.50 0.24 25);
+  --cintas-blue: oklch(0.55 0.15 250);
+  --primary: var(--cintas-blue);
   --primary-foreground: oklch(0.985 0 0);
   --sidebar-primary: var(--cintas-navy);
   --sidebar-primary-foreground: oklch(0.985 0 0);

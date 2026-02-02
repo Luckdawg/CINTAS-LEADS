@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,26 +6,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, AlertTriangle } from "lucide-react";
 import { Link } from "wouter";
+import Navigation from "@/components/Navigation";
 
 export default function Duplicates() {
   const { data: duplicates, isLoading } = trpc.leads.getAllDuplicatesWithAccounts.useQuery();
   const { data: groups } = trpc.leads.getDuplicateGroups.useQuery();
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container py-6">
-          <div className="flex items-center gap-4">
-            <Link href="/">
-              <Button variant="ghost" size="icon">
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-            </Link>
-            <img src="/cintas-logo.png" alt="CINTAS" className="h-12" />
-            <div className="border-l-2 border-border pl-4">
-              <h1 className="text-2xl font-bold text-foreground">Duplicate Analysis</h1>
-              <p className="text-muted-foreground mt-1">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Navigation />
+      
+      {/* Page Header */}
+      <div className="border-b bg-white/80 backdrop-blur-sm shadow-sm">
+        <div className="container py-4">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-6 w-6 text-orange-500" />
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Duplicate Analysis</h1>
+              <p className="text-gray-600 mt-1">
                 Review potential duplicate leads for data quality
               </p>
             </div>

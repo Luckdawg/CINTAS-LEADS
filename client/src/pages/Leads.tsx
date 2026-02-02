@@ -11,6 +11,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMe
 import { Link } from "wouter";
 import { useEffect } from "react";
 import { toast } from "sonner";
+import Navigation from "@/components/Navigation";
 
 import { PRODUCT_LINES, WESTERN_GEORGIA_ZIPS } from "../../../shared/westernGeorgiaZips";
 
@@ -265,9 +266,10 @@ export default function Leads() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <Navigation />
       {/* Header */}
-      <div className="border-b bg-card">
+      <div className="border-b bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="container py-4">
           <div className="flex items-center justify-between">
             <div>
