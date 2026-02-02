@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2 } from "lucide-react";
+import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2, Building2, MapPin, Phone, Users, Package } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import { useEffect } from "react";
@@ -454,7 +454,7 @@ export default function Leads() {
         </Card>
 
         {/* Table */}
-        <Card>
+        <Card className="shadow-md border-2">
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 text-center text-muted-foreground">
@@ -467,7 +467,7 @@ export default function Leads() {
             ) : (
               <div className="w-full overflow-x-auto">
                 <Table className={`${isCompactView ? 'text-sm' : ''}`}>
-                  <TableHeader>
+                  <TableHeader className="bg-muted/50 border-b-2">
                     <TableRow>
                       <TableHead style={{ width: `${columnWidths.companyName}px`, minWidth: `${columnWidths.companyName}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold">
@@ -566,28 +566,38 @@ export default function Leads() {
                     {sortedData.map((account) => {
                       const isEditing = editingId === account.id;
                       return (
-                      <TableRow key={account.id} className={account.possibleDuplicate ? "bg-yellow-50" : ""}>
-                        <TableCell className="font-medium" style={{ maxWidth: `${columnWidths.companyName}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <TableRow key={account.id} className={account.possibleDuplicate ? "bg-yellow-50 hover:bg-yellow-100" : "hover:bg-muted/50"} style={{ transition: 'background-color 0.2s' }}>
+                        <TableCell className="font-medium align-top py-3" style={{ maxWidth: `${columnWidths.companyName}px` }}>
                           {isEditing ? (
                             <Input
                               value={editedData.companyName}
                               onChange={(e) => handleFieldChange('companyName', e.target.value)}
                               className="min-w-full"
                             />
-                          ) : account.companyName}
+                          ) : (
+                            <div className="flex items-start gap-2">
+                              <Building2 className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                              <span>{account.companyName}</span>
+                            </div>
+                          )}
                         </TableCell>
                         {visibleColumns.address && (
-                        <TableCell style={{ maxWidth: `${columnWidths.address}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.address}px` }}>
                           {isEditing ? (
                             <Input
                               value={editedData.address}
                               onChange={(e) => handleFieldChange('address', e.target.value)}
                               className="min-w-full"
                             />
-                          ) : <span className="block truncate">{account.address}</span>}
+                          ) : (
+                            <div className="flex items-start gap-2">
+                              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                              <span className="block break-words">{account.address}</span>
+                            </div>
+                          )}
                         </TableCell>
                         )}
-                        <TableCell style={{ maxWidth: `${columnWidths.city}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.city}px` }}>
                           {isEditing ? (
                             <Input
                               value={editedData.city}
@@ -596,7 +606,7 @@ export default function Leads() {
                             />
                           ) : account.city || 'N/A'}
                         </TableCell>
-                        <TableCell style={{ maxWidth: `${columnWidths.zipCode}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.zipCode}px` }}>
                           {isEditing ? (
                             <Input
                               value={editedData.zipCode}
@@ -605,7 +615,7 @@ export default function Leads() {
                             />
                           ) : account.zipCode}
                         </TableCell>
-                        <TableCell style={{ maxWidth: `${columnWidths.productLines}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.productLines}px` }}>
                           <div className="flex flex-wrap gap-1">
                             {account.productLines?.split(',').slice(0, 2).map((pl, idx) => (
                               <Badge key={idx} variant="secondary" className="text-xs">
@@ -617,20 +627,28 @@ export default function Leads() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell style={{ maxWidth: `${columnWidths.employees}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.employees}px` }}>
                           {account.employeeCountEstimated ? (
-                            <div className="flex flex-col">
-                              <span className="text-xs">{account.employeeCountEstimated}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {account.employeeEstimateConfidence}
-                              </span>
+                            <div className="flex items-start gap-2">
+                              <Users className="h-3 w-3 mt-0.5 text-muted-foreground flex-shrink-0" />
+                              <div className="flex flex-col">
+                                <span className="text-xs font-medium">{account.employeeCountEstimated}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {account.employeeEstimateConfidence}
+                                </span>
+                              </div>
                             </div>
                           ) : (
                             <span className="text-muted-foreground text-xs">N/A</span>
                           )}
                         </TableCell>
                         {visibleColumns.phone && (
-                        <TableCell style={{ maxWidth: `${columnWidths.phone}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account.phone || "N/A"}</TableCell>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.phone}px` }}>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span>{account.phone || "N/A"}</span>
+                          </div>
+                        </TableCell>
                         )}
                         {visibleColumns.links && (
                           <TableCell className={`${isCompactView ? 'py-1' : ''}`} style={{ maxWidth: `${columnWidths.links}px` }}>

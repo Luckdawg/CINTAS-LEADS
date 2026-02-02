@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown, Building2, MapPin, Phone, Mail, User, Award } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Contacts() {
@@ -131,7 +131,7 @@ export default function Contacts() {
       </div>
 
       <div className="container py-8">
-        <Card>
+        <Card className="shadow-md border-2">
           <CardContent className="p-0">
             {isLoading ? (
               <div className="p-8 text-center text-muted-foreground">
@@ -144,7 +144,7 @@ export default function Contacts() {
             ) : (
               <div className="w-full overflow-x-auto">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="bg-muted/50 border-b-2">
                     <TableRow>
                       <TableHead className="w-[130px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('contactName')} className="-ml-3 h-8 font-semibold text-xs">
@@ -242,9 +242,10 @@ export default function Contacts() {
                       return (
                         <TableRow 
                           key={contact.id}
-                          className={contact.roleType === "Primary" ? "bg-green-50" : ""}
+                          className={contact.roleType === "Primary" ? "bg-green-50 hover:bg-green-100" : "hover:bg-muted/50"}
+                          style={{ transition: 'background-color 0.2s' }}
                         >
-                          <TableCell className="font-medium text-sm" style={{ maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <TableCell className="font-medium text-sm align-top py-3" style={{ maxWidth: '130px' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.contactName}
@@ -252,10 +253,13 @@ export default function Contacts() {
                                 className="h-7 text-xs"
                               />
                             ) : (
-                              contact.contactName
+                              <div className="flex items-center gap-2">
+                                <User className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                <span>{contact.contactName}</span>
+                              </div>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm" style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '110px' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.title}
@@ -266,14 +270,24 @@ export default function Contacts() {
                               contact.title || "N/A"
                             )}
                           </TableCell>
-                          <TableCell style={{ maxWidth: '75px' }}>
+                          <TableCell className="align-top py-3" style={{ maxWidth: '75px' }}>
                             <Badge variant={contact.roleType === "Primary" ? "default" : "secondary"} className="text-xs px-1">
                               {contact.roleType === "Primary" ? "Pri" : "Sec"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-medium text-sm" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account.companyName}</TableCell>
-                          <TableCell className="text-sm" style={{ maxWidth: '75px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account.county}</TableCell>
-                          <TableCell className="text-sm" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <TableCell className="font-medium text-sm align-top py-3" style={{ maxWidth: '140px' }}>
+                            <div className="flex items-start gap-2">
+                              <Building2 className="h-3 w-3 mt-0.5 text-muted-foreground flex-shrink-0" />
+                              <span className="block break-words">{account.companyName}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '75px' }}>
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                              <span>{account.county}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '140px' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.email}
@@ -281,10 +295,13 @@ export default function Contacts() {
                                 className="h-7 text-xs"
                               />
                             ) : (
-                              contact.email || "N/A"
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                <span className="break-all">{contact.email || "N/A"}</span>
+                              </div>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm" style={{ maxWidth: '95px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '95px' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.phone}
@@ -292,21 +309,27 @@ export default function Contacts() {
                                 className="h-7 text-xs"
                               />
                             ) : (
-                              contact.phone || "N/A"
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                <span>{contact.phone || "N/A"}</span>
+                              </div>
                             )}
                           </TableCell>
-                          <TableCell style={{ maxWidth: '85px' }}>
-                            <div className="flex items-center gap-1">
-                              <div className="w-10 bg-muted rounded-full h-1.5">
-                                <div 
-                                  className="bg-primary h-1.5 rounded-full"
-                                  style={{ width: `${contact.safetyDecisionAuthority}%` }}
-                                />
+                          <TableCell className="align-top py-3" style={{ maxWidth: '85px' }}>
+                            <div className="flex items-center gap-1.5">
+                              <Award className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                              <div className="flex items-center gap-1">
+                                <div className="w-10 bg-muted rounded-full h-1.5">
+                                  <div 
+                                    className="bg-primary h-1.5 rounded-full transition-all"
+                                    style={{ width: `${contact.safetyDecisionAuthority}%` }}
+                                  />
+                                </div>
+                                <span className="text-xs font-medium">{contact.safetyDecisionAuthority}</span>
                               </div>
-                              <span className="text-xs">{contact.safetyDecisionAuthority}</span>
                             </div>
                           </TableCell>
-                          <TableCell style={{ maxWidth: '55px' }}>
+                          <TableCell className="align-top py-3" style={{ maxWidth: '55px' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.linkedInUrl}
