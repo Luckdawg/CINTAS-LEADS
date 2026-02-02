@@ -328,27 +328,45 @@ async function generateDataQualitySheet(workbook: ExcelJS.Workbook): Promise<voi
     row++;
   });
   
-  // Section 3: Coverage by County
+  // Section 3: Coverage by ZIP Code
   row += 2;
-  sheet.getCell(`A${row}`).value = "Coverage by County (Top 10)";
+  sheet.getCell(`A${row}`).value = "Coverage by ZIP Code (Top 15)";
   sheet.getCell(`A${row}`).font = { size: 12, bold: true };
   sheet.getRow(row).height = 20;
   row++;
   
-  stats.byCounty.slice(0, 10).forEach((item: any) => {
-    sheet.getCell(`A${row}`).value = item.county;
-    sheet.getCell(`B${row}`).value = item.count;
-    sheet.getCell(`A${row}`).font = { bold: true };
+  // Add header row for ZIP code section
+  sheet.getCell(`A${row}`).value = "ZIP Code";
+  sheet.getCell(`B${row}`).value = "City";
+  sheet.getCell(`C${row}`).value = "County";
+  sheet.getCell(`D${row}`).value = "Count";
+  ["A", "B", "C", "D"].forEach(col => {
+    sheet.getCell(`${col}${row}`).font = { bold: true };
+    sheet.getCell(`${col}${row}`).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+  });
+  row++;
+  
+  stats.byZipCode.slice(0, 15).forEach((item: any) => {
+    sheet.getCell(`A${row}`).value = item.zipCode;
+    sheet.getCell(`B${row}`).value = item.city || 'Unknown';
+    sheet.getCell(`C${row}`).value = item.county;
+    sheet.getCell(`D${row}`).value = item.count;
     row++;
   });
   
   // Column widths
-  sheet.getColumn("A").width = 35;
-  sheet.getColumn("B").width = 20;
+  sheet.getColumn("A").width = 15; // ZIP Code
+  sheet.getColumn("B").width = 20; // City
+  sheet.getColumn("C").width = 20; // County
+  sheet.getColumn("D").width = 15; // Count
   
   // Add borders to data sections
   for (let i = 5; i <= row; i++) {
-    ["A", "B"].forEach(col => {
+    ["A", "B", "C", "D"].forEach(col => {
       const cell = sheet.getCell(`${col}${i}`);
       cell.border = {
         top: { style: "thin" },

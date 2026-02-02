@@ -127,3 +127,29 @@
 - [x] Add tests for ZIP code filtering
 - [x] Verify all existing functionality works
 - [x] End-to-end testing of new filters
+
+## Landing Page & Leads Page Enhancements
+
+### Landing Page Updates
+- [x] Replace county breakdown with ZIP code breakdown
+- [x] Add drilldown functionality to Total Leads statistic
+- [x] Add drilldown functionality to Total Contacts statistic
+- [x] Add drilldown functionality to Possible Duplicates statistic
+- [x] Add drilldown functionality to Product Line breakdown
+- [x] Add drilldown functionality to ZIP code breakdown
+- [x] Implement modal/navigation to filtered views from statistics
+
+### Leads Page Updates
+- [x] Add ZIP code dropdown filter with all relevant ZIP codes
+- [x] Implement inline editing for lead fields
+- [x] Add save/cancel buttons for edited leads
+- [x] Add edit mode toggle for each lead row
+- [x] Implement backend update endpoint for lead editing
+- [x] Add validation for edited fields
+- [x] Show success/error messages for save operations
+
+### Backend Updates
+- [x] Add getLeadsByZipCode statistics query
+- [x] Add updateAccount endpoint for lead editing
+- [x] Add validation for account updates
+- [x] Update statistics to include ZIP code breakdown

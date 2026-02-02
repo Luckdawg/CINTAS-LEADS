@@ -18,10 +18,15 @@ const WESTERN_GEORGIA_COUNTIES = [
 ];
 
 export default function Leads() {
+  // Get parameters from URL if present
+  const urlParams = new URLSearchParams(window.location.search);
+  const zipFromUrl = urlParams.get('zipCode');
+  const productLineFromUrl = urlParams.get('productLine');
+  
   const [filters, setFilters] = useState({
     county: "all",
-    productLines: [] as string[],
-    zipCodes: [] as string[],
+    productLines: productLineFromUrl ? [productLineFromUrl] : [] as string[],
+    zipCodes: zipFromUrl ? [zipFromUrl] : [] as string[],
     westernGeorgiaOnly: false,
     searchQuery: "",
     duplicatesOnly: false,
@@ -29,6 +34,8 @@ export default function Leads() {
     maxEmployees: undefined as number | undefined,
   });
   const [page, setPage] = useState(0);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editedData, setEditedData] = useState<any>({});
   const pageSize = 50;
 
   const { data, isLoading, refetch } = trpc.leads.getAccounts.useQuery({
@@ -101,6 +108,51 @@ export default function Leads() {
       maxEmployees: undefined,
     });
     setPage(0);
+  };
+
+  const updateMutation = trpc.leads.updateAccount.useMutation({
+    onSuccess: () => {
+      toast.success("Lead updated successfully");
+      setEditingId(null);
+      setEditedData({});
+      refetch();
+    },
+    onError: (error) => {
+      toast.error("Failed to update lead: " + error.message);
+    },
+  });
+
+  const handleEdit = (account: any) => {
+    setEditingId(account.id);
+    setEditedData({
+      companyName: account.companyName,
+      address: account.address,
+      city: account.city || '',
+      zipCode: account.zipCode,
+      phone: account.phone || '',
+      website: account.website || '',
+      industry: account.industry || '',
+      productLines: account.productLines || '',
+      employeeCountEstimated: account.employeeCountEstimated || '',
+      employeeEstimateConfidence: account.employeeEstimateConfidence || 'Medium',
+    });
+  };
+
+  const handleSave = (id: number) => {
+    updateMutation.mutate({
+      id,
+      ...editedData,
+      employeeCountEstimated: editedData.employeeCountEstimated ? Number(editedData.employeeCountEstimated) : undefined,
+    });
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditedData({});
+  };
+
+  const handleFieldChange = (field: string, value: any) => {
+    setEditedData((prev: any) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -217,15 +269,25 @@ export default function Leads() {
 
               {/* ZIP Code Filter */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">ZIP Codes (comma-separated)</label>
-                <Input
-                  placeholder="e.g., 30117, 30263, 31901"
-                  value={filters.zipCodes.join(', ')}
-                  onChange={(e) => {
-                    const zips = e.target.value.split(',').map(z => z.trim()).filter(z => z.length > 0);
-                    handleFilterChange("zipCodes", zips);
-                  }}
-                />
+                <label className="text-sm font-medium">ZIP Codes</label>
+                <div className="space-y-1 max-h-64 overflow-y-auto border rounded-md p-2">
+                  {WESTERN_GEORGIA_ZIPS.map(zip => (
+                    <label key={zip} className="flex items-center space-x-2 cursor-pointer hover:bg-accent p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={filters.zipCodes.includes(zip)}
+                        onChange={(e) => {
+                          const newZipCodes = e.target.checked
+                            ? [...filters.zipCodes, zip]
+                            : filters.zipCodes.filter(z => z !== zip);
+                          handleFilterChange("zipCodes", newZipCodes);
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm font-mono">{zip}</span>
+                    </label>
+                  ))}
+                </div>
                 {filters.zipCodes.length > 0 && (
                   <p className="text-xs text-muted-foreground">
                     Filtering by {filters.zipCodes.length} ZIP code{filters.zipCodes.length > 1 ? 's' : ''}
@@ -266,20 +328,57 @@ export default function Leads() {
                     <TableRow>
                       <TableHead>Company Name</TableHead>
                       <TableHead>Address</TableHead>
-                      <TableHead>County</TableHead>
+                      <TableHead>City</TableHead>
+                      <TableHead>ZIP</TableHead>
                       <TableHead>Product Lines</TableHead>
                       <TableHead>Employees</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Links</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {data?.accounts.map((account) => (
+                    {data?.accounts.map((account) => {
+                      const isEditing = editingId === account.id;
+                      return (
                       <TableRow key={account.id} className={account.possibleDuplicate ? "bg-yellow-50" : ""}>
-                        <TableCell className="font-medium">{account.companyName}</TableCell>
-                        <TableCell className="max-w-xs truncate">{account.address}</TableCell>
-                        <TableCell>{account.county}</TableCell>
+                        <TableCell className="font-medium">
+                          {isEditing ? (
+                            <Input
+                              value={editedData.companyName}
+                              onChange={(e) => handleFieldChange('companyName', e.target.value)}
+                              className="min-w-[200px]"
+                            />
+                          ) : account.companyName}
+                        </TableCell>
+                        <TableCell className="max-w-xs">
+                          {isEditing ? (
+                            <Input
+                              value={editedData.address}
+                              onChange={(e) => handleFieldChange('address', e.target.value)}
+                              className="min-w-[200px]"
+                            />
+                          ) : <span className="truncate">{account.address}</span>}
+                        </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <Input
+                              value={editedData.city}
+                              onChange={(e) => handleFieldChange('city', e.target.value)}
+                              className="min-w-[120px]"
+                            />
+                          ) : account.city || 'N/A'}
+                        </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <Input
+                              value={editedData.zipCode}
+                              onChange={(e) => handleFieldChange('zipCode', e.target.value)}
+                              className="min-w-[80px]"
+                            />
+                          ) : account.zipCode}
+                        </TableCell>
                         <TableCell>
                           <div className="flex flex-wrap gap-1 max-w-xs">
                             {account.productLines?.split(',').slice(0, 3).map((pl, idx) => (
@@ -330,8 +429,38 @@ export default function Leads() {
                             <Badge variant="destructive">Duplicate</Badge>
                           )}
                         </TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <div className="flex gap-2">
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleSave(account.id)}
+                                disabled={updateMutation.isPending}
+                              >
+                                Save
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={handleCancel}
+                                disabled={updateMutation.isPending}
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => handleEdit(account)}
+                            >
+                              Edit
+                            </Button>
+                          )}
+                        </TableCell>
                       </TableRow>
-                    ))}
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>

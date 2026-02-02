@@ -76,6 +76,27 @@ export const appRouter = router({
         return await db.getLeadStatistics();
       }),
 
+    // Update account (for inline editing)
+    updateAccount: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        companyName: z.string().optional(),
+        address: z.string().optional(),
+        city: z.string().optional(),
+        zipCode: z.string().optional(),
+        phone: z.string().optional(),
+        website: z.string().optional(),
+        industry: z.string().optional(),
+        productLines: z.string().optional(),
+        employeeCountEstimated: z.number().optional(),
+        employeeEstimateConfidence: z.enum(["High", "Medium", "Low"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        await db.updateAccount(id, updates);
+        return { success: true };
+      }),
+
     // Get duplicate groups
     getDuplicateGroups: publicProcedure
       .query(async () => {

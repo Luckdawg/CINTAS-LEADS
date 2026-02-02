@@ -60,7 +60,7 @@ export default function Dashboard() {
       <div className="container py-8">
         {/* Statistics Cards */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-          <Card>
+          <Card className="cursor-pointer hover:bg-accent transition-colors" onClick={() => window.location.href = '/leads'}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
               <Building2 className="h-4 w-4 text-muted-foreground" />
@@ -68,12 +68,12 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{stats?.totalLeads || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Business accounts discovered
+                Click to view all leads
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="cursor-pointer hover:bg-accent transition-colors" onClick={() => window.location.href = '/contacts'}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
@@ -81,12 +81,12 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{stats?.totalContacts || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Decision makers identified
+                Click to view all contacts
               </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="cursor-pointer hover:bg-accent transition-colors" onClick={() => window.location.href = '/duplicates'}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Possible Duplicates</CardTitle>
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
@@ -94,7 +94,7 @@ export default function Dashboard() {
             <CardContent>
               <div className="text-2xl font-bold">{stats?.duplicateLeads || 0}</div>
               <p className="text-xs text-muted-foreground mt-1">
-                Flagged for review
+                Click to view duplicates
               </p>
             </CardContent>
           </Card>
@@ -125,7 +125,11 @@ export default function Dashboard() {
             <CardContent>
               <div className="space-y-4">
                 {stats?.byProductLine.slice(0, 7).map((item: any, idx: number) => (
-                  <div key={item.productLine} className="flex items-center justify-between">
+                  <div 
+                    key={item.productLine} 
+                    className="flex items-center justify-between p-2 hover:bg-accent rounded cursor-pointer transition-colors"
+                    onClick={() => window.location.href = `/leads?productLine=${item.productLine}`}
+                  >
                     <div className="flex items-center gap-3">
                       <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: `hsl(${(idx * 360) / 7}, 70%, 50%)` }}></div>
                       <span className="font-medium text-sm">{item.productLine}</span>
@@ -142,19 +146,26 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Coverage by County (Top 10) */}
+          {/* Coverage by ZIP Code (Top 15) */}
           <Card>
             <CardHeader>
-              <CardTitle>Coverage by County</CardTitle>
-              <CardDescription>Top 10 counties by lead count</CardDescription>
+              <CardTitle>Coverage by ZIP Code</CardTitle>
+              <CardDescription>Top 15 ZIP codes by lead count</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {stats?.byCounty.slice(0, 10).map((item: any, index: number) => (
-                  <div key={item.county} className="flex items-center justify-between">
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {stats?.byZipCode.slice(0, 15).map((item: any, index: number) => (
+                  <div 
+                    key={item.zipCode} 
+                    className="flex items-center justify-between p-2 hover:bg-accent rounded cursor-pointer transition-colors"
+                    onClick={() => window.location.href = `/leads?zipCode=${item.zipCode}`}
+                  >
                     <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground w-6">#{index + 1}</span>
-                      <span className="font-medium">{item.county}</span>
+                      <span className="text-xs text-muted-foreground w-6">#{index + 1}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">{item.zipCode}</span>
+                        <span className="text-xs text-muted-foreground">{item.city || 'Unknown'}, {item.county}</span>
+                      </div>
                     </div>
                     <span className="text-lg font-semibold">{item.count}</span>
                   </div>

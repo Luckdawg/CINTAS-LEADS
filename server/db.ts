@@ -444,13 +444,15 @@ export async function getLeadStatistics() {
     count,
   }));
   
-  const byCounty = await db
+  const byZipCode = await db
     .select({
+      zipCode: accounts.zipCode,
+      city: accounts.city,
       county: accounts.county,
       count: sql<number>`count(*)`,
     })
     .from(accounts)
-    .groupBy(accounts.county)
+    .groupBy(accounts.zipCode, accounts.city, accounts.county)
     .orderBy(desc(sql`count(*)`));
   
   const totalContacts = await db.select({ count: sql<number>`count(*)` }).from(contacts);
@@ -476,6 +478,6 @@ export async function getLeadStatistics() {
     totalContacts: totalContacts[0]?.count || 0,
     avgContactsPerAccount: Number(avgContactsPerAccount[0]?.avg || 0),
     byProductLine,
-    byCounty,
+    byZipCode,
   };
 }

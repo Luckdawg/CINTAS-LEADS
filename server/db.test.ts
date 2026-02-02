@@ -127,7 +127,7 @@ describe("Database Operations", () => {
       expect(typeof stats.totalContacts).toBe("number");
       expect(typeof stats.avgContactsPerAccount).toBe("number");
       expect(Array.isArray(stats.byProductLine)).toBe(true);
-      expect(Array.isArray(stats.byCounty)).toBe(true);
+      expect(Array.isArray(stats.byZipCode)).toBe(true);
     });
   });
 });
