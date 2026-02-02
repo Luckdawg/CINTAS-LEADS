@@ -153,3 +153,9 @@
 - [x] Add updateAccount endpoint for lead editing
 - [x] Add validation for account updates
 - [x] Update statistics to include ZIP code breakdown
+
+## Fix Duplicate Key Errors
+- [x] Investigate duplicate ZIP codes in byZipCode statistics
+- [x] Fix SQL query to ensure unique ZIP codes with aggregated counts
+- [x] Update Dashboard to use unique keys for ZIP code rendering
+- [x] Test and verify no duplicate key warnings

@@ -447,12 +447,12 @@ export async function getLeadStatistics() {
   const byZipCode = await db
     .select({
       zipCode: accounts.zipCode,
-      city: accounts.city,
-      county: accounts.county,
+      city: sql<string>`MIN(${accounts.city})`,
+      county: sql<string>`MIN(${accounts.county})`,
       count: sql<number>`count(*)`,
     })
     .from(accounts)
-    .groupBy(accounts.zipCode, accounts.city, accounts.county)
+    .groupBy(accounts.zipCode)
     .orderBy(desc(sql`count(*)`));
   
   const totalContacts = await db.select({ count: sql<number>`count(*)` }).from(contacts);

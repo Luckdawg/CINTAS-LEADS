@@ -156,7 +156,7 @@ export default function Dashboard() {
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {stats?.byZipCode.slice(0, 15).map((item: any, index: number) => (
                   <div 
-                    key={item.zipCode} 
+                    key={`${item.zipCode}-${index}`} 
                     className="flex items-center justify-between p-2 hover:bg-accent rounded cursor-pointer transition-colors"
                     onClick={() => window.location.href = `/leads?zipCode=${item.zipCode}`}
                   >
