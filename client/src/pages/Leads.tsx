@@ -370,54 +370,54 @@ export default function Leads() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>
+                      <TableHead className="w-[180px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold">
                           Company Name
                           {getSortIcon('companyName')}
                         </Button>
                       </TableHead>
-                      <TableHead>
+                      <TableHead className="w-[200px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('address')} className="-ml-3 h-8 font-semibold">
                           Address
                           {getSortIcon('address')}
                         </Button>
                       </TableHead>
-                      <TableHead>
+                      <TableHead className="w-[100px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('city')} className="-ml-3 h-8 font-semibold">
                           City
                           {getSortIcon('city')}
                         </Button>
                       </TableHead>
-                      <TableHead>
+                      <TableHead className="w-[70px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('zipCode')} className="-ml-3 h-8 font-semibold">
                           ZIP
                           {getSortIcon('zipCode')}
                         </Button>
                       </TableHead>
-                      <TableHead>
+                      <TableHead className="w-[150px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('productLines')} className="-ml-3 h-8 font-semibold">
                           Product Lines
                           {getSortIcon('productLines')}
                         </Button>
                       </TableHead>
-                      <TableHead>
+                      <TableHead className="w-[100px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('employeeCountEstimated')} className="-ml-3 h-8 font-semibold">
                           Employees
                           {getSortIcon('employeeCountEstimated')}
                         </Button>
                       </TableHead>
-                      <TableHead>
+                      <TableHead className="w-[120px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold">
                           Phone
                           {getSortIcon('phone')}
                         </Button>
                       </TableHead>
-                      <TableHead>Links</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="sticky right-0 bg-background">Actions</TableHead>
+                      <TableHead className="w-[80px]">Links</TableHead>
+                      <TableHead className="w-[90px]">Status</TableHead>
+                      <TableHead className="w-[100px] sticky right-0 bg-background">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -425,7 +425,7 @@ export default function Leads() {
                       const isEditing = editingId === account.id;
                       return (
                       <TableRow key={account.id} className={account.possibleDuplicate ? "bg-yellow-50" : ""}>
-                        <TableCell className="font-medium">
+                        <TableCell className="font-medium w-[180px]">
                           {isEditing ? (
                             <Input
                               value={editedData.companyName}
@@ -434,16 +434,16 @@ export default function Leads() {
                             />
                           ) : account.companyName}
                         </TableCell>
-                        <TableCell className="max-w-xs">
+                        <TableCell className="w-[200px]">
                           {isEditing ? (
                             <Input
                               value={editedData.address}
                               onChange={(e) => handleFieldChange('address', e.target.value)}
                               className="min-w-[200px]"
                             />
-                          ) : <span className="truncate">{account.address}</span>}
+                          ) : <span className="block truncate">{account.address}</span>}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[100px]">
                           {isEditing ? (
                             <Input
                               value={editedData.city}
@@ -452,7 +452,7 @@ export default function Leads() {
                             />
                           ) : account.city || 'N/A'}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[70px]">
                           {isEditing ? (
                             <Input
                               value={editedData.zipCode}
@@ -461,8 +461,8 @@ export default function Leads() {
                             />
                           ) : account.zipCode}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex flex-wrap gap-1 max-w-xs">
+                        <TableCell className="w-[150px]">
+                          <div className="flex flex-wrap gap-1">
                             {account.productLines?.split(',').slice(0, 3).map((pl, idx) => (
                               <Badge key={idx} variant="secondary" className="text-xs">
                                 {PRODUCT_LINES.find(p => p.value === pl.trim())?.label || pl.trim()}
@@ -473,7 +473,7 @@ export default function Leads() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[100px]">
                           {account.employeeCountEstimated ? (
                             <div className="flex flex-col">
                               <span>{account.employeeCountEstimated}</span>
@@ -485,8 +485,8 @@ export default function Leads() {
                             <span className="text-muted-foreground">N/A</span>
                           )}
                         </TableCell>
-                        <TableCell>{account.phone || "N/A"}</TableCell>
-                        <TableCell>
+                        <TableCell className="w-[120px]">{account.phone || "N/A"}</TableCell>
+                        <TableCell className="w-[80px]">
                           <div className="flex gap-2">
                             {account.website && (
                               <a href={account.website.startsWith("http") ? account.website : `https://${account.website}`} target="_blank" rel="noopener noreferrer">
@@ -506,12 +506,12 @@ export default function Leads() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[90px]">
                           {account.possibleDuplicate && (
                             <Badge variant="destructive">Duplicate</Badge>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="w-[100px] sticky right-0 bg-background">
                           {isEditing ? (
                             <div className="flex gap-2">
                               <Button 

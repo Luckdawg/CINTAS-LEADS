@@ -183,3 +183,9 @@
 - [x] Implement client-side sorting for all columns
 - [x] Test sorting on all column types (text, number, date)
 - [x] Ensure sorting works with pagination
+
+## Table Width Optimization
+- [x] Reduce column widths on Leads table to fit viewport
+- [x] Remove horizontal scrollbar requirement
+- [x] Test table fits on standard screen sizes (1280px+)
+- [x] Ensure all content remains readable
