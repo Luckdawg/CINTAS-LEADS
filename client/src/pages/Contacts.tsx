@@ -90,19 +90,19 @@ export default function Contacts() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <Table>
+                <Table className="min-w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Contact Name</TableHead>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Role Type</TableHead>
-                      <TableHead>Company</TableHead>
-                      <TableHead>County</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Phone</TableHead>
-                      <TableHead>Authority Score</TableHead>
-                      <TableHead>LinkedIn</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="w-[180px]">Contact Name</TableHead>
+                      <TableHead className="w-[160px]">Title</TableHead>
+                      <TableHead className="w-[100px]">Role Type</TableHead>
+                      <TableHead className="w-[200px]">Company</TableHead>
+                      <TableHead className="w-[100px]">County</TableHead>
+                      <TableHead className="w-[200px]">Email</TableHead>
+                      <TableHead className="w-[120px]">Phone</TableHead>
+                      <TableHead className="w-[120px]">Authority Score</TableHead>
+                      <TableHead className="w-[80px]">LinkedIn</TableHead>
+                      <TableHead className="w-[100px] sticky right-0 bg-background">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -199,7 +199,7 @@ export default function Contacts() {
                               <span className="text-muted-foreground text-sm">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="sticky right-0 bg-background">
                             {isEditing ? (
                               <div className="flex gap-1">
                                 <Button
