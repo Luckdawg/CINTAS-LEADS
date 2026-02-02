@@ -6,8 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
+import { useEffect } from "react";
 import { toast } from "sonner";
 
 import { PRODUCT_LINES, WESTERN_GEORGIA_ZIPS } from "../../../shared/westernGeorgiaZips";
@@ -38,6 +40,88 @@ export default function Leads() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editedData, setEditedData] = useState<any>({});
+  
+  // Column visibility and view mode
+  const [visibleColumns, setVisibleColumns] = useState(() => {
+    const saved = localStorage.getItem('leadsTableVisibleColumns');
+    return saved ? JSON.parse(saved) : {
+      companyName: true,
+      address: true,
+      city: true,
+      zipCode: true,
+      productLines: true,
+      employees: true,
+      phone: true,
+      links: true,
+      status: true,
+    };
+  });
+  const [isCompactView, setIsCompactView] = useState(() => {
+    const saved = localStorage.getItem('leadsTableCompactView');
+    return saved === 'true';
+  });
+  
+  const [columnWidths, setColumnWidths] = useState(() => {
+    const saved = localStorage.getItem('leadsTableColumnWidths');
+    return saved ? JSON.parse(saved) : {
+      companyName: 180,
+      address: 200,
+      city: 100,
+      zipCode: 70,
+      productLines: 150,
+      employees: 100,
+      phone: 120,
+      links: 80,
+      status: 90,
+    };
+  });
+  
+  const [resizing, setResizing] = useState<{column: string, startX: number, startWidth: number} | null>(null);
+  
+  // Save preferences to localStorage
+  useEffect(() => {
+    localStorage.setItem('leadsTableVisibleColumns', JSON.stringify(visibleColumns));
+  }, [visibleColumns]);
+  
+  useEffect(() => {
+    localStorage.setItem('leadsTableCompactView', String(isCompactView));
+  }, [isCompactView]);
+  
+  useEffect(() => {
+    localStorage.setItem('leadsTableColumnWidths', JSON.stringify(columnWidths));
+  }, [columnWidths]);
+  
+  const handleResizeStart = (column: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setResizing({ column, startX: e.clientX, startWidth: columnWidths[column as keyof typeof columnWidths] });
+  };
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (resizing) {
+        const diff = e.clientX - resizing.startX;
+        const newWidth = Math.max(50, resizing.startWidth + diff);
+        setColumnWidths((prev: any) => ({ ...prev, [resizing.column]: newWidth }));
+      }
+    };
+    
+    const handleMouseUp = () => {
+      setResizing(null);
+    };
+    
+    if (resizing) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [resizing]);
+  
+  const toggleColumn = (column: string) => {
+    setVisibleColumns((prev: any) => ({ ...prev, [column]: !prev[column] }));
+  };
   const pageSize = 50;
 
   const { data, isLoading, refetch } = trpc.leads.getAccounts.useQuery({
@@ -222,10 +306,51 @@ export default function Leads() {
                 </p>
               </div>
             </div>
-            <Button onClick={handleExport} disabled={exportMutation.isPending}>
-              <Download className="h-4 w-4 mr-2" />
-              {exportMutation.isPending ? "Generating..." : "Export to Excel"}
-            </Button>
+            <div className="flex gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Columns
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.address}
+                    onCheckedChange={() => toggleColumn('address')}
+                  >
+                    Address
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.phone}
+                    onCheckedChange={() => toggleColumn('phone')}
+                  >
+                    Phone
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.links}
+                    onCheckedChange={() => toggleColumn('links')}
+                  >
+                    Links
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
+              <Button 
+                variant="outline" 
+                onClick={() => setIsCompactView(!isCompactView)}
+              >
+                {isCompactView ? <Maximize2 className="h-4 w-4 mr-2" /> : <Minimize2 className="h-4 w-4 mr-2" />}
+                {isCompactView ? "Comfortable" : "Compact"}
+              </Button>
+              
+              <Button onClick={handleExport} disabled={exportMutation.isPending}>
+                <Download className="h-4 w-4 mr-2" />
+                {exportMutation.isPending ? "Generating..." : "Export to Excel"}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -370,53 +495,99 @@ export default function Leads() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <Table className="w-full">
+                <Table className={`w-full ${isCompactView ? 'text-sm' : ''}`}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[180px]">
+                      <TableHead style={{ width: `${columnWidths.companyName}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold">
                           Company Name
                           {getSortIcon('companyName')}
                         </Button>
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                          onMouseDown={(e) => handleResizeStart('companyName', e)}
+                        />
                       </TableHead>
-                      <TableHead className="w-[200px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('address')} className="-ml-3 h-8 font-semibold">
-                          Address
-                          {getSortIcon('address')}
-                        </Button>
-                      </TableHead>
-                      <TableHead className="w-[100px]">
+                      {visibleColumns.address && (
+                        <TableHead style={{ width: `${columnWidths.address}px`, position: 'relative' }}>
+                          <Button variant="ghost" size="sm" onClick={() => handleSort('address')} className="-ml-3 h-8 font-semibold">
+                            Address
+                            {getSortIcon('address')}
+                          </Button>
+                          <div 
+                            className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                            onMouseDown={(e) => handleResizeStart('address', e)}
+                          />
+                        </TableHead>
+                      )}
+                      <TableHead style={{ width: `${columnWidths.city}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('city')} className="-ml-3 h-8 font-semibold">
                           City
                           {getSortIcon('city')}
                         </Button>
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                          onMouseDown={(e) => handleResizeStart('city', e)}
+                        />
                       </TableHead>
-                      <TableHead className="w-[70px]">
+                      <TableHead style={{ width: `${columnWidths.zipCode}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('zipCode')} className="-ml-3 h-8 font-semibold">
                           ZIP
                           {getSortIcon('zipCode')}
                         </Button>
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                          onMouseDown={(e) => handleResizeStart('zipCode', e)}
+                        />
                       </TableHead>
-                      <TableHead className="w-[150px]">
+                      <TableHead style={{ width: `${columnWidths.productLines}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('productLines')} className="-ml-3 h-8 font-semibold">
                           Product Lines
                           {getSortIcon('productLines')}
                         </Button>
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                          onMouseDown={(e) => handleResizeStart('productLines', e)}
+                        />
                       </TableHead>
-                      <TableHead className="w-[100px]">
+                      <TableHead style={{ width: `${columnWidths.employees}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('employeeCountEstimated')} className="-ml-3 h-8 font-semibold">
                           Employees
                           {getSortIcon('employeeCountEstimated')}
                         </Button>
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                          onMouseDown={(e) => handleResizeStart('employees', e)}
+                        />
                       </TableHead>
-                      <TableHead className="w-[120px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold">
-                          Phone
-                          {getSortIcon('phone')}
-                        </Button>
+                      {visibleColumns.phone && (
+                        <TableHead style={{ width: `${columnWidths.phone}px`, position: 'relative' }}>
+                          <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold">
+                            Phone
+                            {getSortIcon('phone')}
+                          </Button>
+                          <div 
+                            className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                            onMouseDown={(e) => handleResizeStart('phone', e)}
+                          />
+                        </TableHead>
+                      )}
+                      {visibleColumns.links && (
+                        <TableHead style={{ width: `${columnWidths.links}px`, position: 'relative' }}>
+                          Links
+                          <div 
+                            className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                            onMouseDown={(e) => handleResizeStart('links', e)}
+                          />
+                        </TableHead>
+                      )}
+                      <TableHead style={{ width: `${columnWidths.status}px`, position: 'relative' }}>
+                        Status
+                        <div 
+                          className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
+                          onMouseDown={(e) => handleResizeStart('status', e)}
+                        />
                       </TableHead>
-                      <TableHead className="w-[80px]">Links</TableHead>
-                      <TableHead className="w-[90px]">Status</TableHead>
                       <TableHead className="w-[100px] sticky right-0 bg-background">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -486,7 +657,8 @@ export default function Leads() {
                           )}
                         </TableCell>
                         <TableCell className="w-[120px]">{account.phone || "N/A"}</TableCell>
-                        <TableCell className="w-[80px]">
+                        {visibleColumns.links && (
+                          <TableCell className={`w-[80px] ${isCompactView ? 'py-1' : ''}`}>
                           <div className="flex gap-2">
                             {account.website && (
                               <a href={account.website.startsWith("http") ? account.website : `https://${account.website}`} target="_blank" rel="noopener noreferrer">
@@ -505,13 +677,14 @@ export default function Leads() {
                               </a>
                             )}
                           </div>
-                        </TableCell>
-                        <TableCell className="w-[90px]">
+                          </TableCell>
+                        )}
+                        <TableCell className={`w-[90px] ${isCompactView ? 'py-1' : ''}`}>
                           {account.possibleDuplicate && (
                             <Badge variant="destructive">Duplicate</Badge>
                           )}
                         </TableCell>
-                        <TableCell className="w-[100px] sticky right-0 bg-background">
+                        <TableCell className={`w-[100px] sticky right-0 bg-background ${isCompactView ? 'py-1' : ''}`}>
                           {isEditing ? (
                             <div className="flex gap-2">
                               <Button 

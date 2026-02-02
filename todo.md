@@ -189,3 +189,15 @@
 - [x] Remove horizontal scrollbar requirement
 - [x] Test table fits on standard screen sizes (1280px+)
 - [x] Ensure all content remains readable
+
+## Table Enhancements
+- [x] Implement column visibility toggle dropdown
+- [x] Add show/hide functionality for Address, Phone, Links columns
+- [x] Save column visibility preferences to localStorage
+- [x] Add responsive column resizing with draggable borders
+- [x] Implement drag handles between column headers
+- [x] Save column width preferences to localStorage
+- [x] Create compact view mode toggle
+- [x] Reduce row height and padding in compact mode
+- [x] Save view density preference to localStorage
+- [x] Test all features work together seamlessly
