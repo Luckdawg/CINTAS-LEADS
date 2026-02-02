@@ -172,9 +172,17 @@
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 1.5rem; /* 24px - desktop padding */
+      padding-right: 1.5rem;
+      max-width: 1400px; /* Increased width for tables */
+    }
+  }
+
+  @media (min-width: 1440px) {
+    .container {
+      padding-left: 2rem; /* 32px - large desktop padding */
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1600px; /* Wider for large screens */
     }
   }
 }

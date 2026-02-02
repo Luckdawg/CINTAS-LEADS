@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -46,13 +46,13 @@ export default function Leads() {
     const saved = localStorage.getItem('leadsTableVisibleColumns');
     return saved ? JSON.parse(saved) : {
       companyName: true,
-      address: true,
+      address: false,
       city: true,
       zipCode: true,
       productLines: true,
       employees: true,
-      phone: true,
-      links: true,
+      phone: false,
+      links: false,
       status: true,
     };
   });
@@ -61,18 +61,19 @@ export default function Leads() {
     return saved === 'true';
   });
   
+  // Reduced column widths to fit viewport without horizontal scroll
   const [columnWidths, setColumnWidths] = useState(() => {
     const saved = localStorage.getItem('leadsTableColumnWidths');
     return saved ? JSON.parse(saved) : {
-      companyName: 180,
-      address: 200,
-      city: 100,
-      zipCode: 70,
-      productLines: 150,
-      employees: 100,
-      phone: 120,
-      links: 80,
-      status: 90,
+      companyName: 150,
+      address: 160,
+      city: 85,
+      zipCode: 55,
+      productLines: 120,
+      employees: 80,
+      phone: 105,
+      links: 65,
+      status: 75,
     };
   });
   
@@ -101,7 +102,10 @@ export default function Leads() {
       if (resizing) {
         const diff = e.clientX - resizing.startX;
         const newWidth = Math.max(50, resizing.startWidth + diff);
-        setColumnWidths((prev: any) => ({ ...prev, [resizing.column]: newWidth }));
+        setColumnWidths((prev: typeof columnWidths) => ({
+          ...prev,
+          [resizing.column]: newWidth
+        }));
       }
     };
     
@@ -118,19 +122,15 @@ export default function Leads() {
       };
     }
   }, [resizing]);
-  
-  const toggleColumn = (column: string) => {
-    setVisibleColumns((prev: any) => ({ ...prev, [column]: !prev[column] }));
-  };
-  const pageSize = 50;
 
-  const { data, isLoading, refetch } = trpc.leads.getAccounts.useQuery({
+  const pageSize = 50;
+  const { data, isLoading } = trpc.leads.getAccounts.useQuery({
     county: filters.county === "all" ? undefined : filters.county,
     productLines: filters.productLines.length > 0 ? filters.productLines : undefined,
     zipCodes: filters.zipCodes.length > 0 ? filters.zipCodes : undefined,
-    westernGeorgiaOnly: filters.westernGeorgiaOnly || undefined,
+    westernGeorgiaOnly: filters.westernGeorgiaOnly,
     searchQuery: filters.searchQuery || undefined,
-    duplicatesOnly: filters.duplicatesOnly || undefined,
+    duplicatesOnly: filters.duplicatesOnly,
     minEmployees: filters.minEmployees,
     maxEmployees: filters.maxEmployees,
     limit: pageSize,
@@ -138,44 +138,31 @@ export default function Leads() {
   });
 
   const exportMutation = trpc.export.generateExcel.useMutation({
-    onSuccess: (result) => {
-      // Convert base64 to blob and download
-      const byteCharacters = atob(result.data);
-      const byteNumbers = new Array(byteCharacters.length);
-      for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-      }
-      const byteArray = new Uint8Array(byteNumbers);
-      const blob = new Blob([byteArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = result.filename;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-      
-      toast.success("Excel file downloaded successfully");
+    onSuccess: (result: any) => {
+      // Create a download link
+      const link = document.createElement('a');
+      link.href = result.downloadUrl;
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success("Excel file generated successfully!");
     },
-    onError: (error) => {
-      toast.error("Failed to generate Excel file: " + error.message);
-    },
+    onError: (error: any) => {
+      toast.error(`Failed to generate Excel: ${error.message}`);
+    }
   });
 
-  const handleExport = () => {
-    exportMutation.mutate({
-      county: filters.county === "all" ? undefined : filters.county,
-      productLines: filters.productLines.length > 0 ? filters.productLines : undefined,
-      zipCodes: filters.zipCodes.length > 0 ? filters.zipCodes : undefined,
-      westernGeorgiaOnly: filters.westernGeorgiaOnly || undefined,
-      searchQuery: filters.searchQuery || undefined,
-      duplicatesOnly: filters.duplicatesOnly || undefined,
-      minEmployees: filters.minEmployees,
-      maxEmployees: filters.maxEmployees,
-    });
-  };
+  const updateMutation = trpc.leads.updateAccount.useMutation({
+    onSuccess: () => {
+      toast.success("Lead updated successfully!");
+      setEditingId(null);
+      setEditedData({});
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update lead: ${error.message}`);
+    }
+  });
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));
@@ -196,6 +183,19 @@ export default function Leads() {
     setPage(0);
   };
 
+  const handleExport = () => {
+    exportMutation.mutate({
+      county: filters.county === "all" ? undefined : filters.county,
+      productLines: filters.productLines.length > 0 ? filters.productLines : undefined,
+      zipCodes: filters.zipCodes.length > 0 ? filters.zipCodes : undefined,
+      westernGeorgiaOnly: filters.westernGeorgiaOnly,
+      searchQuery: filters.searchQuery || undefined,
+      duplicatesOnly: filters.duplicatesOnly,
+      minEmployees: filters.minEmployees,
+      maxEmployees: filters.maxEmployees,
+    });
+  };
+
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -206,74 +206,35 @@ export default function Leads() {
   };
 
   const getSortIcon = (column: string) => {
-    if (sortBy !== column) return <ArrowUpDown className="ml-2 h-4 w-4" />;
-    return sortDirection === 'asc' ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />;
+    if (sortBy !== column) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 inline" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="ml-2 h-4 w-4 inline" />
+      : <ArrowDown className="ml-2 h-4 w-4 inline" />;
   };
 
-  // Sort data client-side
-  const sortedData = useMemo(() => {
-    if (!data?.accounts || !sortBy) return data?.accounts || [];
+  const sortedData = data?.accounts ? [...data.accounts].sort((a, b) => {
+    if (!sortBy) return 0;
     
-    const sorted = [...data.accounts].sort((a, b) => {
-      let aVal: any = a[sortBy as keyof typeof a];
-      let bVal: any = b[sortBy as keyof typeof b];
-      
-      // Handle null/undefined
-      if (aVal == null) return 1;
-      if (bVal == null) return -1;
-      
-      // Handle numbers
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
-      }
-      
-      // Handle strings
-      const aStr = String(aVal).toLowerCase();
-      const bStr = String(bVal).toLowerCase();
-      
-      if (sortDirection === 'asc') {
-        return aStr < bStr ? -1 : aStr > bStr ? 1 : 0;
-      } else {
-        return bStr < aStr ? -1 : bStr > aStr ? 1 : 0;
-      }
-    });
+    const aVal = a[sortBy as keyof typeof a];
+    const bVal = b[sortBy as keyof typeof b];
     
-    return sorted;
-  }, [data?.accounts, sortBy, sortDirection]);
-
-  const updateMutation = trpc.leads.updateAccount.useMutation({
-    onSuccess: () => {
-      toast.success("Lead updated successfully");
-      setEditingId(null);
-      setEditedData({});
-      refetch();
-    },
-    onError: (error) => {
-      toast.error("Failed to update lead: " + error.message);
-    },
-  });
+    if (aVal === null || aVal === undefined) return 1;
+    if (bVal === null || bVal === undefined) return -1;
+    
+    const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+    return sortDirection === 'asc' ? comparison : -comparison;
+  }) : [];
 
   const handleEdit = (account: any) => {
     setEditingId(account.id);
     setEditedData({
       companyName: account.companyName,
       address: account.address,
-      city: account.city || '',
+      city: account.city,
       zipCode: account.zipCode,
-      phone: account.phone || '',
-      website: account.website || '',
-      industry: account.industry || '',
-      productLines: account.productLines || '',
-      employeeCountEstimated: account.employeeCountEstimated || '',
-      employeeEstimateConfidence: account.employeeEstimateConfidence || 'Medium',
-    });
-  };
-
-  const handleSave = (id: number) => {
-    updateMutation.mutate({
-      id,
-      ...editedData,
-      employeeCountEstimated: editedData.employeeCountEstimated ? Number(editedData.employeeCountEstimated) : undefined,
+      phone: account.phone,
     });
   };
 
@@ -282,71 +243,81 @@ export default function Leads() {
     setEditedData({});
   };
 
-  const handleFieldChange = (field: string, value: any) => {
-    setEditedData((prev: any) => ({ ...prev, [field]: value }));
+  const handleSave = (accountId: number) => {
+    updateMutation.mutate({
+      id: accountId,
+      ...editedData,
+    });
+  };
+
+  const handleFieldChange = (field: string, value: string) => {
+    setEditedData((prev: any) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const toggleColumnVisibility = (column: string) => {
+    setVisibleColumns((prev: typeof visibleColumns) => ({
+      ...prev,
+      [column]: !prev[column]
+    }));
   };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <div className="border-b bg-card">
-        <div className="container py-6">
+        <div className="container py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button variant="ghost" size="icon">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
-              <img src="/cintas-logo.png" alt="CINTAS" className="h-12" />
-              <div className="border-l-2 border-border pl-4">
-                <h1 className="text-2xl font-bold text-foreground">Business Leads</h1>
-                <p className="text-muted-foreground mt-1">
-                  {data?.total || 0} leads found
-                </p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold">Business Leads</h1>
+              <p className="text-muted-foreground">{data?.total || 0} leads found</p>
             </div>
             <div className="flex gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline">
+                  <Button variant="outline" size="sm">
                     <Eye className="h-4 w-4 mr-2" />
                     Columns
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Toggle Columns</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuCheckboxItem
                     checked={visibleColumns.address}
-                    onCheckedChange={() => toggleColumn('address')}
+                    onCheckedChange={() => toggleColumnVisibility('address')}
                   >
                     Address
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
                     checked={visibleColumns.phone}
-                    onCheckedChange={() => toggleColumn('phone')}
+                    onCheckedChange={() => toggleColumnVisibility('phone')}
                   >
                     Phone
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
                     checked={visibleColumns.links}
-                    onCheckedChange={() => toggleColumn('links')}
+                    onCheckedChange={() => toggleColumnVisibility('links')}
                   >
                     Links
                   </DropdownMenuCheckboxItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
               <Button 
                 variant="outline" 
+                size="sm"
                 onClick={() => setIsCompactView(!isCompactView)}
               >
                 {isCompactView ? <Maximize2 className="h-4 w-4 mr-2" /> : <Minimize2 className="h-4 w-4 mr-2" />}
-                {isCompactView ? "Comfortable" : "Compact"}
+                {isCompactView ? 'Comfortable' : 'Compact'}
               </Button>
-              
-              <Button onClick={handleExport} disabled={exportMutation.isPending}>
+              <Button 
+                onClick={handleExport} 
+                disabled={exportMutation.isPending}
+                size="sm"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 {exportMutation.isPending ? "Generating..." : "Export to Excel"}
               </Button>
@@ -494,11 +465,11 @@ export default function Leads() {
                 No leads found matching your filters.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table className={`w-full ${isCompactView ? 'text-sm' : ''}`}>
+              <div className="w-full overflow-x-auto">
+                <Table className={`${isCompactView ? 'text-sm' : ''}`}>
                   <TableHeader>
                     <TableRow>
-                      <TableHead style={{ width: `${columnWidths.companyName}px`, position: 'relative' }}>
+                      <TableHead style={{ width: `${columnWidths.companyName}px`, minWidth: `${columnWidths.companyName}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold">
                           Company Name
                           {getSortIcon('companyName')}
@@ -509,7 +480,7 @@ export default function Leads() {
                         />
                       </TableHead>
                       {visibleColumns.address && (
-                        <TableHead style={{ width: `${columnWidths.address}px`, position: 'relative' }}>
+                        <TableHead style={{ width: `${columnWidths.address}px`, minWidth: `${columnWidths.address}px`, position: 'relative' }}>
                           <Button variant="ghost" size="sm" onClick={() => handleSort('address')} className="-ml-3 h-8 font-semibold">
                             Address
                             {getSortIcon('address')}
@@ -520,7 +491,7 @@ export default function Leads() {
                           />
                         </TableHead>
                       )}
-                      <TableHead style={{ width: `${columnWidths.city}px`, position: 'relative' }}>
+                      <TableHead style={{ width: `${columnWidths.city}px`, minWidth: `${columnWidths.city}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('city')} className="-ml-3 h-8 font-semibold">
                           City
                           {getSortIcon('city')}
@@ -530,7 +501,7 @@ export default function Leads() {
                           onMouseDown={(e) => handleResizeStart('city', e)}
                         />
                       </TableHead>
-                      <TableHead style={{ width: `${columnWidths.zipCode}px`, position: 'relative' }}>
+                      <TableHead style={{ width: `${columnWidths.zipCode}px`, minWidth: `${columnWidths.zipCode}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('zipCode')} className="-ml-3 h-8 font-semibold">
                           ZIP
                           {getSortIcon('zipCode')}
@@ -540,7 +511,7 @@ export default function Leads() {
                           onMouseDown={(e) => handleResizeStart('zipCode', e)}
                         />
                       </TableHead>
-                      <TableHead style={{ width: `${columnWidths.productLines}px`, position: 'relative' }}>
+                      <TableHead style={{ width: `${columnWidths.productLines}px`, minWidth: `${columnWidths.productLines}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('productLines')} className="-ml-3 h-8 font-semibold">
                           Product Lines
                           {getSortIcon('productLines')}
@@ -550,7 +521,7 @@ export default function Leads() {
                           onMouseDown={(e) => handleResizeStart('productLines', e)}
                         />
                       </TableHead>
-                      <TableHead style={{ width: `${columnWidths.employees}px`, position: 'relative' }}>
+                      <TableHead style={{ width: `${columnWidths.employees}px`, minWidth: `${columnWidths.employees}px`, position: 'relative' }}>
                         <Button variant="ghost" size="sm" onClick={() => handleSort('employeeCountEstimated')} className="-ml-3 h-8 font-semibold">
                           Employees
                           {getSortIcon('employeeCountEstimated')}
@@ -561,7 +532,7 @@ export default function Leads() {
                         />
                       </TableHead>
                       {visibleColumns.phone && (
-                        <TableHead style={{ width: `${columnWidths.phone}px`, position: 'relative' }}>
+                        <TableHead style={{ width: `${columnWidths.phone}px`, minWidth: `${columnWidths.phone}px`, position: 'relative' }}>
                           <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold">
                             Phone
                             {getSortIcon('phone')}
@@ -573,7 +544,7 @@ export default function Leads() {
                         </TableHead>
                       )}
                       {visibleColumns.links && (
-                        <TableHead style={{ width: `${columnWidths.links}px`, position: 'relative' }}>
+                        <TableHead style={{ width: `${columnWidths.links}px`, minWidth: `${columnWidths.links}px`, position: 'relative' }}>
                           Links
                           <div 
                             className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
@@ -581,7 +552,7 @@ export default function Leads() {
                           />
                         </TableHead>
                       )}
-                      <TableHead style={{ width: `${columnWidths.status}px`, position: 'relative' }}>
+                      <TableHead style={{ width: `${columnWidths.status}px`, minWidth: `${columnWidths.status}px`, position: 'relative' }}>
                         Status
                         <div 
                           className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary"
@@ -596,81 +567,85 @@ export default function Leads() {
                       const isEditing = editingId === account.id;
                       return (
                       <TableRow key={account.id} className={account.possibleDuplicate ? "bg-yellow-50" : ""}>
-                        <TableCell className="font-medium w-[180px]">
+                        <TableCell className="font-medium" style={{ maxWidth: `${columnWidths.companyName}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {isEditing ? (
                             <Input
                               value={editedData.companyName}
                               onChange={(e) => handleFieldChange('companyName', e.target.value)}
-                              className="min-w-[200px]"
+                              className="min-w-full"
                             />
                           ) : account.companyName}
                         </TableCell>
-                        <TableCell className="w-[200px]">
+                        {visibleColumns.address && (
+                        <TableCell style={{ maxWidth: `${columnWidths.address}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {isEditing ? (
                             <Input
                               value={editedData.address}
                               onChange={(e) => handleFieldChange('address', e.target.value)}
-                              className="min-w-[200px]"
+                              className="min-w-full"
                             />
                           ) : <span className="block truncate">{account.address}</span>}
                         </TableCell>
-                        <TableCell className="w-[100px]">
+                        )}
+                        <TableCell style={{ maxWidth: `${columnWidths.city}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {isEditing ? (
                             <Input
                               value={editedData.city}
                               onChange={(e) => handleFieldChange('city', e.target.value)}
-                              className="min-w-[120px]"
+                              className="min-w-full"
                             />
                           ) : account.city || 'N/A'}
                         </TableCell>
-                        <TableCell className="w-[70px]">
+                        <TableCell style={{ maxWidth: `${columnWidths.zipCode}px` }}>
                           {isEditing ? (
                             <Input
                               value={editedData.zipCode}
                               onChange={(e) => handleFieldChange('zipCode', e.target.value)}
-                              className="min-w-[80px]"
+                              className="min-w-full"
                             />
                           ) : account.zipCode}
                         </TableCell>
-                        <TableCell className="w-[150px]">
+                        <TableCell style={{ maxWidth: `${columnWidths.productLines}px` }}>
                           <div className="flex flex-wrap gap-1">
-                            {account.productLines?.split(',').slice(0, 3).map((pl, idx) => (
+                            {account.productLines?.split(',').slice(0, 2).map((pl, idx) => (
                               <Badge key={idx} variant="secondary" className="text-xs">
                                 {PRODUCT_LINES.find(p => p.value === pl.trim())?.label || pl.trim()}
                               </Badge>
                             ))}
-                            {account.productLines && account.productLines.split(',').length > 3 && (
-                              <Badge variant="outline" className="text-xs">+{account.productLines.split(',').length - 3}</Badge>
+                            {account.productLines && account.productLines.split(',').length > 2 && (
+                              <Badge variant="outline" className="text-xs">+{account.productLines.split(',').length - 2}</Badge>
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="w-[100px]">
+                        <TableCell style={{ maxWidth: `${columnWidths.employees}px` }}>
                           {account.employeeCountEstimated ? (
                             <div className="flex flex-col">
-                              <span>{account.employeeCountEstimated}</span>
+                              <span className="text-xs">{account.employeeCountEstimated}</span>
                               <span className="text-xs text-muted-foreground">
                                 {account.employeeEstimateConfidence}
                               </span>
                             </div>
                           ) : (
-                            <span className="text-muted-foreground">N/A</span>
+                            <span className="text-muted-foreground text-xs">N/A</span>
                           )}
                         </TableCell>
-                        <TableCell className="w-[120px]">{account.phone || "N/A"}</TableCell>
+                        {visibleColumns.phone && (
+                        <TableCell style={{ maxWidth: `${columnWidths.phone}px`, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account.phone || "N/A"}</TableCell>
+                        )}
                         {visibleColumns.links && (
-                          <TableCell className={`w-[80px] ${isCompactView ? 'py-1' : ''}`}>
-                          <div className="flex gap-2">
+                          <TableCell className={`${isCompactView ? 'py-1' : ''}`} style={{ maxWidth: `${columnWidths.links}px` }}>
+                          <div className="flex gap-1">
                             {account.website && (
                               <a href={account.website.startsWith("http") ? account.website : `https://${account.website}`} target="_blank" rel="noopener noreferrer">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <ExternalLink className="h-4 w-4" />
+                                <Button variant="ghost" size="icon" className="h-7 w-7">
+                                  <ExternalLink className="h-3 w-3" />
                                 </Button>
                               </a>
                             )}
                             {account.linkedInCompanyUrl && (
                               <a href={account.linkedInCompanyUrl} target="_blank" rel="noopener noreferrer">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                <Button variant="ghost" size="icon" className="h-7 w-7">
+                                  <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                                   </svg>
                                 </Button>
@@ -679,18 +654,19 @@ export default function Leads() {
                           </div>
                           </TableCell>
                         )}
-                        <TableCell className={`w-[90px] ${isCompactView ? 'py-1' : ''}`}>
+                        <TableCell className={`${isCompactView ? 'py-1' : ''}`} style={{ maxWidth: `${columnWidths.status}px` }}>
                           {account.possibleDuplicate && (
-                            <Badge variant="destructive">Duplicate</Badge>
+                            <Badge variant="destructive" className="text-xs">Dup</Badge>
                           )}
                         </TableCell>
                         <TableCell className={`w-[100px] sticky right-0 bg-background ${isCompactView ? 'py-1' : ''}`}>
                           {isEditing ? (
-                            <div className="flex gap-2">
+                            <div className="flex gap-1">
                               <Button 
                                 size="sm" 
                                 onClick={() => handleSave(account.id)}
                                 disabled={updateMutation.isPending}
+                                className="text-xs px-2 py-1 h-7"
                               >
                                 Save
                               </Button>
@@ -699,6 +675,7 @@ export default function Leads() {
                                 variant="outline" 
                                 onClick={handleCancel}
                                 disabled={updateMutation.isPending}
+                                className="text-xs px-2 py-1 h-7"
                               >
                                 Cancel
                               </Button>
@@ -708,6 +685,7 @@ export default function Leads() {
                               size="sm" 
                               variant="outline" 
                               onClick={() => handleEdit(account)}
+                              className="text-xs px-2 py-1 h-7"
                             >
                               Edit
                             </Button>

@@ -209,3 +209,15 @@
 - [x] Add visual indicators (up/down arrows) for active sort column
 - [x] Test sorting on all column types (text, email, phone)
 - [x] Verify table fits on standard screen sizes (1280px+)
+
+## Fix Table Layouts - Eliminate Horizontal Scrollbars
+- [x] Analyze Business Leads table layout and measure total column widths
+- [x] Analyze Contacts table layout and measure total column widths
+- [x] Implement responsive table container with proper max-width constraints
+- [x] Adjust Business Leads column widths to fit within 1280px viewport
+- [x] Adjust Contacts column widths to fit within 1280px viewport
+- [x] Add text wrapping or truncation for long content where appropriate
+- [x] Test both tables at 1280px, 1440px, and 1920px resolutions
+- [x] Verify no horizontal scrollbars appear on either table
+- [x] Ensure all columns remain visible and usable
+- [x] Verify sorting, editing, and all other functionality still works

@@ -123,60 +123,60 @@ export default function Contacts() {
                 No contacts found.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table className="min-w-full">
+              <div className="w-full overflow-x-auto">
+                <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[160px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('contactName')} className="-ml-3 h-8 font-semibold">
-                          Contact Name
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                      <TableHead className="w-[130px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('contactName')} className="-ml-3 h-8 font-semibold text-xs">
+                          Name
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[110px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('title')} className="-ml-3 h-8 font-semibold text-xs">
+                          Title
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[75px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('roleType')} className="-ml-3 h-8 font-semibold text-xs">
+                          Role
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
                         </Button>
                       </TableHead>
                       <TableHead className="w-[140px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('title')} className="-ml-3 h-8 font-semibold">
-                          Title
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </TableHead>
-                      <TableHead className="w-[90px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('roleType')} className="-ml-3 h-8 font-semibold">
-                          Role Type
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </TableHead>
-                      <TableHead className="w-[180px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold text-xs">
                           Company
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
                         </Button>
                       </TableHead>
-                      <TableHead className="w-[90px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('county')} className="-ml-3 h-8 font-semibold">
+                      <TableHead className="w-[75px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('county')} className="-ml-3 h-8 font-semibold text-xs">
                           County
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
                         </Button>
                       </TableHead>
-                      <TableHead className="w-[180px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('email')} className="-ml-3 h-8 font-semibold">
+                      <TableHead className="w-[140px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('email')} className="-ml-3 h-8 font-semibold text-xs">
                           Email
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
                         </Button>
                       </TableHead>
-                      <TableHead className="w-[110px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold">
+                      <TableHead className="w-[95px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold text-xs">
                           Phone
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
                         </Button>
                       </TableHead>
-                      <TableHead className="w-[110px]">
-                        <Button variant="ghost" size="sm" onClick={() => handleSort('authorityScore')} className="-ml-3 h-8 font-semibold">
+                      <TableHead className="w-[85px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('authorityScore')} className="-ml-3 h-8 font-semibold text-xs">
                           Authority
-                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                          <ArrowUpDown className="ml-1 h-3 w-3" />
                         </Button>
                       </TableHead>
-                      <TableHead className="w-[70px]">LinkedIn</TableHead>
-                      <TableHead className="w-[100px] sticky right-0 bg-background">Actions</TableHead>
+                      <TableHead className="w-[55px] text-xs">Link</TableHead>
+                      <TableHead className="w-[90px] sticky right-0 bg-background text-xs">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -193,116 +193,117 @@ export default function Contacts() {
                           key={contact.id}
                           className={contact.roleType === "Primary" ? "bg-green-50" : ""}
                         >
-                          <TableCell className="font-medium w-[160px]">
+                          <TableCell className="font-medium text-sm" style={{ maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.contactName}
                                 onChange={(e) => setEditForm({ ...editForm, contactName: e.target.value })}
-                                className="h-8"
+                                className="h-7 text-xs"
                               />
                             ) : (
                               contact.contactName
                             )}
                           </TableCell>
-                          <TableCell className="w-[140px]">
+                          <TableCell className="text-sm" style={{ maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.title}
                                 onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
-                                className="h-8"
+                                className="h-7 text-xs"
                               />
                             ) : (
                               contact.title || "N/A"
                             )}
                           </TableCell>
-                          <TableCell className="w-[90px]">
-                            <Badge variant={contact.roleType === "Primary" ? "default" : "secondary"}>
-                              {contact.roleType}
+                          <TableCell style={{ maxWidth: '75px' }}>
+                            <Badge variant={contact.roleType === "Primary" ? "default" : "secondary"} className="text-xs px-1">
+                              {contact.roleType === "Primary" ? "Pri" : "Sec"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-medium w-[180px]">{account.companyName}</TableCell>
-                          <TableCell className="w-[90px]">{account.county}</TableCell>
-                          <TableCell className="w-[180px]">
+                          <TableCell className="font-medium text-sm" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account.companyName}</TableCell>
+                          <TableCell className="text-sm" style={{ maxWidth: '75px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{account.county}</TableCell>
+                          <TableCell className="text-sm" style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.email}
                                 onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                                className="h-8"
+                                className="h-7 text-xs"
                               />
                             ) : (
                               contact.email || "N/A"
                             )}
                           </TableCell>
-                          <TableCell className="w-[110px]">
+                          <TableCell className="text-sm" style={{ maxWidth: '95px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.phone}
                                 onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                                className="h-8"
+                                className="h-7 text-xs"
                               />
                             ) : (
                               contact.phone || "N/A"
                             )}
                           </TableCell>
-                          <TableCell className="w-[110px]">
-                            <div className="flex items-center gap-2">
-                              <div className="w-16 bg-muted rounded-full h-2">
+                          <TableCell style={{ maxWidth: '85px' }}>
+                            <div className="flex items-center gap-1">
+                              <div className="w-10 bg-muted rounded-full h-1.5">
                                 <div 
-                                  className="bg-primary h-2 rounded-full"
+                                  className="bg-primary h-1.5 rounded-full"
                                   style={{ width: `${contact.safetyDecisionAuthority}%` }}
                                 />
                               </div>
-                              <span className="text-sm">{contact.safetyDecisionAuthority}</span>
+                              <span className="text-xs">{contact.safetyDecisionAuthority}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="w-[70px]">
+                          <TableCell style={{ maxWidth: '55px' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.linkedInUrl}
                                 onChange={(e) => setEditForm({ ...editForm, linkedInUrl: e.target.value })}
-                                className="h-8"
-                                placeholder="LinkedIn URL"
+                                className="h-7 text-xs"
                               />
                             ) : contact.linkedInUrl ? (
                               <a href={contact.linkedInUrl} target="_blank" rel="noopener noreferrer">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                  <ExternalLink className="h-4 w-4" />
+                                <Button variant="ghost" size="icon" className="h-6 w-6">
+                                  <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                  </svg>
                                 </Button>
                               </a>
                             ) : (
-                              <span className="text-muted-foreground text-sm">N/A</span>
+                              <span className="text-xs text-muted-foreground">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell className="sticky right-0 bg-background">
+                          <TableCell className="sticky right-0 bg-background" style={{ maxWidth: '90px' }}>
                             {isEditing ? (
                               <div className="flex gap-1">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8"
+                                <Button 
+                                  size="sm" 
                                   onClick={() => handleSave(contact.id)}
                                   disabled={updateContactMutation.isPending}
+                                  className="h-6 px-2 text-xs"
                                 >
-                                  <Save className="h-4 w-4" />
+                                  <Save className="h-3 w-3" />
                                 </Button>
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  className="h-8 w-8"
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
                                   onClick={handleCancel}
                                   disabled={updateContactMutation.isPending}
+                                  className="h-6 px-2 text-xs"
                                 >
-                                  <X className="h-4 w-4" />
+                                  <X className="h-3 w-3" />
                                 </Button>
                               </div>
                             ) : (
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8"
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
                                 onClick={() => handleEdit(contact)}
+                                className="h-6 px-2 text-xs"
                               >
-                                <Edit className="h-4 w-4" />
+                                <Edit className="h-3 w-3 mr-1" />
+                                Edit
                               </Button>
                             )}
                           </TableCell>
@@ -317,10 +318,10 @@ export default function Contacts() {
         </Card>
 
         {/* Pagination */}
-        {contactsData && contactsData.length === pageSize && (
+        {contactsData && contactsData.length >= pageSize && (
           <div className="flex items-center justify-between mt-6">
             <div className="text-sm text-muted-foreground">
-              Showing {page * pageSize + 1} to {(page + 1) * pageSize} contacts
+              Showing {page * pageSize + 1} to {page * pageSize + (contactsData?.length || 0)} contacts
             </div>
             <div className="flex gap-2">
               <Button
@@ -333,7 +334,7 @@ export default function Contacts() {
               <Button
                 variant="outline"
                 onClick={() => setPage(p => p + 1)}
-                disabled={contactsData.length < pageSize}
+                disabled={!contactsData || contactsData.length < pageSize}
               >
                 Next
               </Button>
