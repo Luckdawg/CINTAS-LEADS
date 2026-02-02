@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown } from "lucide-react";
+import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Contacts() {
@@ -70,12 +70,31 @@ export default function Contacts() {
     if (!contactsData || !sortBy) return contactsData;
     
     const sorted = [...contactsData].sort((a, b) => {
-      let aVal: any = a[sortBy as keyof typeof a];
-      let bVal: any = b[sortBy as keyof typeof b];
+      // Map sort column to correct data path
+      let aVal: any;
+      let bVal: any;
+      
+      // Contact fields
+      if (['contactName', 'title', 'email', 'phone', 'roleType', 'authorityScore'].includes(sortBy)) {
+        aVal = a.contact[sortBy as keyof typeof a.contact];
+        bVal = b.contact[sortBy as keyof typeof b.contact];
+      }
+      // Account fields
+      else if (['companyName', 'county'].includes(sortBy)) {
+        aVal = a.account?.[sortBy as keyof typeof a.account];
+        bVal = b.account?.[sortBy as keyof typeof b.account];
+      }
       
       // Handle null/undefined values
       if (aVal == null) aVal = '';
       if (bVal == null) bVal = '';
+      
+      // For numeric fields (authorityScore), compare as numbers
+      if (sortBy === 'authorityScore') {
+        const aNum = Number(aVal) || 0;
+        const bNum = Number(bVal) || 0;
+        return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+      }
       
       // Convert to strings for comparison
       const aStr = String(aVal).toLowerCase();
@@ -130,49 +149,81 @@ export default function Contacts() {
                       <TableHead className="w-[130px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('contactName')} className="-ml-3 h-8 font-semibold text-xs">
                           Name
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'contactName' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[110px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('title')} className="-ml-3 h-8 font-semibold text-xs">
                           Title
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'title' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[75px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('roleType')} className="-ml-3 h-8 font-semibold text-xs">
                           Role
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'roleType' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[140px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold text-xs">
                           Company
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'companyName' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[75px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('county')} className="-ml-3 h-8 font-semibold text-xs">
                           County
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'county' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[140px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('email')} className="-ml-3 h-8 font-semibold text-xs">
                           Email
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'email' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[95px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold text-xs">
                           Phone
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'phone' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[85px]">
                         <Button variant="ghost" size="sm" onClick={() => handleSort('authorityScore')} className="-ml-3 h-8 font-semibold text-xs">
                           Authority
-                          <ArrowUpDown className="ml-1 h-3 w-3" />
+                          {sortBy === 'authorityScore' ? (
+                            sortDirection === 'asc' ? <ArrowUp className="ml-1 h-3 w-3" /> : <ArrowDown className="ml-1 h-3 w-3" />
+                          ) : (
+                            <ArrowUpDown className="ml-1 h-3 w-3 opacity-30" />
+                          )}
                         </Button>
                       </TableHead>
                       <TableHead className="w-[55px] text-xs">Link</TableHead>

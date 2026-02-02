@@ -221,3 +221,12 @@
 - [x] Verify no horizontal scrollbars appear on either table
 - [x] Ensure all columns remain visible and usable
 - [x] Verify sorting, editing, and all other functionality still works
+
+## Fix Contacts Table Sorting Functionality
+- [x] Investigate why Contacts table sorting is not working
+- [x] Identify the bug in the sorting implementation
+- [x] Fix sorting logic for all columns (Name, Title, Role, Company, County, Email, Phone, Authority)
+- [x] Add proper sort state management
+- [x] Test sorting on all columns with different data types
+- [x] Verify sort indicators (arrows) display correctly
+- [x] Ensure sorting works with pagination
