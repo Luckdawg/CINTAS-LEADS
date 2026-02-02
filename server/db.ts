@@ -282,6 +282,22 @@ export async function updateAccount(id: number, updates: Partial<InsertAccount>)
 // CONTACTS - Decision Maker Management
 // ============================================================================
 
+export async function updateContact(id: number, updates: Partial<InsertContact>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Filter out undefined values and ensure we have at least one field to update
+  const filteredUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([_, value]) => value !== undefined)
+  );
+  
+  if (Object.keys(filteredUpdates).length === 0) {
+    return; // Nothing to update
+  }
+  
+  await db.update(contacts).set(filteredUpdates).where(eq(contacts.id, id));
+}
+
 export async function insertContact(contact: InsertContact) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");

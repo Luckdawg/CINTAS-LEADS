@@ -4,17 +4,56 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { ArrowLeft, ExternalLink, Edit, Save, X } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Contacts() {
   const [page, setPage] = useState(0);
   const pageSize = 50;
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<any>({});
 
+  const utils = trpc.useUtils();
   const { data: contactsData, isLoading } = trpc.leads.getAllContactsWithAccounts.useQuery({
     limit: pageSize,
     offset: page * pageSize,
   });
+
+  const updateContactMutation = trpc.leads.updateContact.useMutation({
+    onSuccess: () => {
+      utils.leads.getAllContactsWithAccounts.invalidate();
+      setEditingId(null);
+      setEditForm({});
+    },
+  });
+
+  const handleEdit = (contact: any) => {
+    setEditingId(contact.id);
+    setEditForm({
+      contactName: contact.contactName,
+      title: contact.title || "",
+      email: contact.email || "",
+      phone: contact.phone || "",
+      linkedInUrl: contact.linkedInUrl || "",
+    });
+  };
+
+  const handleSave = async (contactId: number) => {
+    await updateContactMutation.mutateAsync({
+      id: contactId,
+      contactName: editForm.contactName,
+      title: editForm.title,
+      email: editForm.email,
+      phone: editForm.phone,
+      linkedInUrl: editForm.linkedInUrl,
+    });
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditForm({});
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -63,6 +102,7 @@ export default function Contacts() {
                       <TableHead>Phone</TableHead>
                       <TableHead>Authority Score</TableHead>
                       <TableHead>LinkedIn</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -72,13 +112,35 @@ export default function Contacts() {
                       
                       if (!account) return null;
                       
+                      const isEditing = editingId === contact.id;
+                      
                       return (
                         <TableRow 
                           key={contact.id}
                           className={contact.roleType === "Primary" ? "bg-green-50" : ""}
                         >
-                          <TableCell className="font-medium">{contact.contactName}</TableCell>
-                          <TableCell className="max-w-xs">{contact.title || "N/A"}</TableCell>
+                          <TableCell className="font-medium">
+                            {isEditing ? (
+                              <Input
+                                value={editForm.contactName}
+                                onChange={(e) => setEditForm({ ...editForm, contactName: e.target.value })}
+                                className="h-8"
+                              />
+                            ) : (
+                              contact.contactName
+                            )}
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            {isEditing ? (
+                              <Input
+                                value={editForm.title}
+                                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                className="h-8"
+                              />
+                            ) : (
+                              contact.title || "N/A"
+                            )}
+                          </TableCell>
                           <TableCell>
                             <Badge variant={contact.roleType === "Primary" ? "default" : "secondary"}>
                               {contact.roleType}
@@ -86,8 +148,28 @@ export default function Contacts() {
                           </TableCell>
                           <TableCell className="font-medium">{account.companyName}</TableCell>
                           <TableCell>{account.county}</TableCell>
-                          <TableCell>{contact.email || "N/A"}</TableCell>
-                          <TableCell>{contact.phone || "N/A"}</TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <Input
+                                value={editForm.email}
+                                onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                                className="h-8"
+                              />
+                            ) : (
+                              contact.email || "N/A"
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <Input
+                                value={editForm.phone}
+                                onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                                className="h-8"
+                              />
+                            ) : (
+                              contact.phone || "N/A"
+                            )}
+                          </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2">
                               <div className="w-16 bg-muted rounded-full h-2">
@@ -100,7 +182,14 @@ export default function Contacts() {
                             </div>
                           </TableCell>
                           <TableCell>
-                            {contact.linkedInUrl ? (
+                            {isEditing ? (
+                              <Input
+                                value={editForm.linkedInUrl}
+                                onChange={(e) => setEditForm({ ...editForm, linkedInUrl: e.target.value })}
+                                className="h-8"
+                                placeholder="LinkedIn URL"
+                              />
+                            ) : contact.linkedInUrl ? (
                               <a href={contact.linkedInUrl} target="_blank" rel="noopener noreferrer">
                                 <Button variant="ghost" size="icon" className="h-8 w-8">
                                   <ExternalLink className="h-4 w-4" />
@@ -108,6 +197,39 @@ export default function Contacts() {
                               </a>
                             ) : (
                               <span className="text-muted-foreground text-sm">N/A</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {isEditing ? (
+                              <div className="flex gap-1">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  onClick={() => handleSave(contact.id)}
+                                  disabled={updateContactMutation.isPending}
+                                >
+                                  <Save className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  className="h-8 w-8"
+                                  onClick={handleCancel}
+                                  disabled={updateContactMutation.isPending}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                onClick={() => handleEdit(contact)}
+                              >
+                                <Edit className="h-4 w-4" />
+                              </Button>
                             )}
                           </TableCell>
                         </TableRow>

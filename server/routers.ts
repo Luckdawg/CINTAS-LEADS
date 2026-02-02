@@ -97,6 +97,22 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // Update contact (for inline editing)
+    updateContact: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        contactName: z.string().optional(),
+        title: z.string().optional(),
+        email: z.string().optional(),
+        phone: z.string().optional(),
+        linkedInUrl: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...updates } = input;
+        await db.updateContact(id, updates);
+        return { success: true };
+      }),
+
     // Get duplicate groups
     getDuplicateGroups: publicProcedure
       .query(async () => {

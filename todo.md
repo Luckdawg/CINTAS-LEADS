@@ -159,3 +159,12 @@
 - [x] Fix SQL query to ensure unique ZIP codes with aggregated counts
 - [x] Update Dashboard to use unique keys for ZIP code rendering
 - [x] Test and verify no duplicate key warnings
+
+## Contact Editing Feature
+- [x] Add updateContact backend endpoint with validation
+- [x] Add inline editing UI to Contacts page
+- [x] Implement edit/save/cancel buttons for each contact
+- [x] Add optimistic updates for instant feedback
+- [x] Add error handling and success messages
+- [x] Write unit tests for updateContact endpoint
+- [x] Test end-to-end contact editing workflow
