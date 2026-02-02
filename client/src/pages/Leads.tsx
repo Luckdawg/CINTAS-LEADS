@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2, Building2, MapPin, Phone, Users, Package } from "lucide-react";
+import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2, Building2, MapPin, Phone, Users, Package, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import { useEffect } from "react";
@@ -125,6 +125,7 @@ export default function Leads() {
   }, [resizing]);
 
   const pageSize = 50;
+  const utils = trpc.useUtils();
   const { data, isLoading } = trpc.leads.getAccounts.useQuery({
     county: filters.county === "all" ? undefined : filters.county,
     productLines: filters.productLines.length > 0 ? filters.productLines : undefined,
@@ -152,6 +153,16 @@ export default function Leads() {
     onError: (error: any) => {
       toast.error(`Failed to generate Excel: ${error.message}`);
     }
+  });
+
+  const deleteMutation = trpc.leads.deleteAccount.useMutation({
+    onSuccess: () => {
+      toast.success("Lead deleted successfully!");
+      utils.leads.getAccounts.invalidate();
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to delete lead");
+    },
   });
 
   const updateMutation = trpc.leads.updateAccount.useMutation({
@@ -569,7 +580,7 @@ export default function Leads() {
                       const isEditing = editingId === account.id;
                       return (
                       <TableRow key={account.id} className={account.possibleDuplicate ? "bg-yellow-50 hover:bg-yellow-100" : "hover:bg-muted/50"} style={{ transition: 'background-color 0.2s' }}>
-                        <TableCell className="font-medium align-top py-3" style={{ maxWidth: `${columnWidths.companyName}px` }}>
+                        <TableCell className="font-medium align-top py-3" style={{ maxWidth: `${columnWidths.companyName}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           {isEditing ? (
                             <Input
                               value={editedData.companyName}
@@ -584,7 +595,7 @@ export default function Leads() {
                           )}
                         </TableCell>
                         {visibleColumns.address && (
-                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.address}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.address}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           {isEditing ? (
                             <Input
                               value={editedData.address}
@@ -594,12 +605,12 @@ export default function Leads() {
                           ) : (
                             <div className="flex items-start gap-2">
                               <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                              <span className="block break-words">{account.address}</span>
+                              <span style={{ wordBreak: 'break-word', overflowWrap: 'break-word', display: 'block' }}>{account.address}</span>
                             </div>
                           )}
                         </TableCell>
                         )}
-                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.city}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.city}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           {isEditing ? (
                             <Input
                               value={editedData.city}
@@ -608,7 +619,7 @@ export default function Leads() {
                             />
                           ) : account.city || 'N/A'}
                         </TableCell>
-                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.zipCode}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.zipCode}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           {isEditing ? (
                             <Input
                               value={editedData.zipCode}
@@ -617,7 +628,7 @@ export default function Leads() {
                             />
                           ) : account.zipCode}
                         </TableCell>
-                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.productLines}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.productLines}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           <div className="flex flex-wrap gap-1">
                             {account.productLines?.split(',').slice(0, 2).map((pl, idx) => (
                               <Badge key={idx} variant="secondary" className="text-xs">
@@ -629,7 +640,7 @@ export default function Leads() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.employees}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.employees}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           {account.employeeCountEstimated ? (
                             <div className="flex items-start gap-2">
                               <Users className="h-3 w-3 mt-0.5 text-muted-foreground flex-shrink-0" />
@@ -645,7 +656,7 @@ export default function Leads() {
                           )}
                         </TableCell>
                         {visibleColumns.phone && (
-                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.phone}px` }}>
+                        <TableCell className="align-top py-3" style={{ maxWidth: `${columnWidths.phone}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           <div className="flex items-center gap-2">
                             <Phone className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                             <span>{account.phone || "N/A"}</span>
@@ -653,7 +664,7 @@ export default function Leads() {
                         </TableCell>
                         )}
                         {visibleColumns.links && (
-                          <TableCell className={`${isCompactView ? 'py-1' : ''}`} style={{ maxWidth: `${columnWidths.links}px` }}>
+                           <TableCell className={`${isCompactView ? 'py-1' : ''}`} style={{ maxWidth: `${columnWidths.links}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           <div className="flex gap-1">
                             {account.website && (
                               <a href={account.website.startsWith("http") ? account.website : `https://${account.website}`} target="_blank" rel="noopener noreferrer">
@@ -674,7 +685,7 @@ export default function Leads() {
                           </div>
                           </TableCell>
                         )}
-                        <TableCell className={`${isCompactView ? 'py-1' : ''}`} style={{ maxWidth: `${columnWidths.status}px` }}>
+                        <TableCell className={`${isCompactView ? 'py-1' : ''}`} style={{ maxWidth: `${columnWidths.status}px`, wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                           {account.possibleDuplicate && (
                             <Badge variant="destructive" className="text-xs">Dup</Badge>
                           )}
@@ -701,14 +712,29 @@ export default function Leads() {
                               </Button>
                             </div>
                           ) : (
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              onClick={() => handleEdit(account)}
-                              className="text-xs px-2 py-1 h-7"
-                            >
-                              Edit
-                            </Button>
+                            <div className="flex gap-1">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => handleEdit(account)}
+                                className="text-xs px-2 py-1 h-7"
+                              >
+                                Edit
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="destructive" 
+                                onClick={() => {
+                                  if (window.confirm(`Are you sure you want to delete ${account.companyName}? This action cannot be undone.`)) {
+                                    deleteMutation.mutate({ id: account.id });
+                                  }
+                                }}
+                                disabled={deleteMutation.isPending}
+                                className="text-xs px-2 py-1 h-7"
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
                           )}
                         </TableCell>
                       </TableRow>

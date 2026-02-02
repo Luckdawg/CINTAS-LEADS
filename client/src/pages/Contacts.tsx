@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown, Building2, MapPin, Phone, Mail, User, Award } from "lucide-react";
+import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown, Building2, MapPin, Phone, Mail, User, Award, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import Navigation from "@/components/Navigation";
 
@@ -28,6 +28,12 @@ export default function Contacts() {
       utils.leads.getAllContactsWithAccounts.invalidate();
       setEditingId(null);
       setEditForm({});
+    },
+  });
+
+  const deleteContactMutation = trpc.leads.deleteContact.useMutation({
+    onSuccess: () => {
+      utils.leads.getAllContactsWithAccounts.invalidate();
     },
   });
 
@@ -238,7 +244,7 @@ export default function Contacts() {
                           className={contact.roleType === "Primary" ? "bg-green-50 hover:bg-green-100" : "hover:bg-muted/50"}
                           style={{ transition: 'background-color 0.2s' }}
                         >
-                          <TableCell className="font-medium text-sm align-top py-3" style={{ maxWidth: '130px' }}>
+                          <TableCell className="font-medium text-sm align-top py-3" style={{ maxWidth: '130px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.contactName}
@@ -252,7 +258,7 @@ export default function Contacts() {
                               </div>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '110px' }}>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '110px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.title}
@@ -263,24 +269,24 @@ export default function Contacts() {
                               contact.title || "N/A"
                             )}
                           </TableCell>
-                          <TableCell className="align-top py-3" style={{ maxWidth: '75px' }}>
+                          <TableCell className="align-top py-3" style={{ maxWidth: '75px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             <Badge variant={contact.roleType === "Primary" ? "default" : "secondary"} className="text-xs px-1">
                               {contact.roleType === "Primary" ? "Pri" : "Sec"}
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-medium text-sm align-top py-3" style={{ maxWidth: '140px' }}>
+                          <TableCell className="font-medium text-sm align-top py-3" style={{ maxWidth: '140px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             <div className="flex items-start gap-2">
                               <Building2 className="h-3 w-3 mt-0.5 text-muted-foreground flex-shrink-0" />
                               <span className="block break-words">{account.companyName}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '75px' }}>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '75px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             <div className="flex items-center gap-2">
                               <MapPin className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                               <span>{account.county}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '140px' }}>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '140px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.email}
@@ -294,7 +300,7 @@ export default function Contacts() {
                               </div>
                             )}
                           </TableCell>
-                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '95px' }}>
+                          <TableCell className="text-sm align-top py-3" style={{ maxWidth: '95px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.phone}
@@ -308,7 +314,7 @@ export default function Contacts() {
                               </div>
                             )}
                           </TableCell>
-                          <TableCell className="align-top py-3" style={{ maxWidth: '85px' }}>
+                          <TableCell className="align-top py-3" style={{ maxWidth: '85px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             <div className="flex items-center gap-1.5">
                               <Award className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                               <div className="flex items-center gap-1">
@@ -322,7 +328,7 @@ export default function Contacts() {
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="align-top py-3" style={{ maxWidth: '55px' }}>
+                          <TableCell className="align-top py-3" style={{ maxWidth: '55px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             {isEditing ? (
                               <Input
                                 value={editForm.linkedInUrl}
@@ -341,7 +347,7 @@ export default function Contacts() {
                               <span className="text-xs text-muted-foreground">N/A</span>
                             )}
                           </TableCell>
-                          <TableCell className="sticky right-0 bg-background" style={{ maxWidth: '90px' }}>
+                          <TableCell className="sticky right-0 bg-background" style={{ maxWidth: '90px', wordBreak: 'break-word', overflowWrap: 'break-word' }}>
                             {isEditing ? (
                               <div className="flex gap-1">
                                 <Button 
@@ -363,15 +369,29 @@ export default function Contacts() {
                                 </Button>
                               </div>
                             ) : (
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => handleEdit(contact)}
-                                className="h-6 px-2 text-xs"
-                              >
-                                <Edit className="h-3 w-3 mr-1" />
-                                Edit
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => handleEdit(contact)}
+                                  className="h-6 px-2 text-xs"
+                                >
+                                  <Edit className="h-3 w-3" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive" 
+                                  onClick={() => {
+                                    if (window.confirm(`Are you sure you want to delete ${contact.contactName}? This action cannot be undone.`)) {
+                                      deleteContactMutation.mutate({ id: contact.id });
+                                    }
+                                  }}
+                                  disabled={deleteContactMutation.isPending}
+                                  className="h-6 px-2 text-xs"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>

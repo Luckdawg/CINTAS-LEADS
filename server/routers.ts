@@ -170,6 +170,26 @@ export const appRouter = router({
           filename: `CINTAS_Leads_${new Date().toISOString().split('T')[0]}.xlsx`,
         };
       }),
+
+    // Delete account (lead)
+    deleteAccount: publicProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deleteAccount(input.id);
+        return { success: true };
+      }),
+
+    // Delete contact
+    deleteContact: publicProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deleteContact(input.id);
+        return { success: true };
+      }),
   }),
 });
 

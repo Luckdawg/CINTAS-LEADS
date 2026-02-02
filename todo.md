@@ -268,3 +268,18 @@
 - [x] Remove nested anchor tags - Link already renders <a>
 - [x] Test navigation to ensure links still work
 - [x] Verify no console errors
+
+## Add Delete Functionality & Fix Text Wrapping COMPLETELY
+- [x] Create deleteLead mutation in server/routers.ts
+- [x] Create deleteContact mutation in server/routers.ts
+- [x] Add delete helper functions to server/db.ts
+- [x] Add Delete button to Leads table with confirmation dialog
+- [x] Add Delete button to Contacts table with confirmation dialog
+- [x] Implement optimistic updates for delete operations
+- [x] Fix text wrapping in Leads table - NO overlapping allowed
+- [x] Fix text wrapping in Contacts table - NO overlapping allowed
+- [x] Set proper word-break and overflow-wrap CSS properties
+- [x] Adjust table cell padding for better readability
+- [x] Test delete functionality on multiple records
+- [x] Verify text wrapping works perfectly with long content
+- [x] Ensure tables look professional and readable

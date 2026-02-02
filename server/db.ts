@@ -497,3 +497,23 @@ export async function getLeadStatistics() {
     byZipCode,
   };
 }
+
+// Delete account by ID
+export async function deleteAccount(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Delete related contacts first (foreign key constraint)
+  await db.delete(contacts).where(eq(contacts.accountId, id));
+  
+  // Delete the account
+  await db.delete(accounts).where(eq(accounts.id, id));
+}
+
+// Delete contact by ID
+export async function deleteContact(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(contacts).where(eq(contacts.id, id));
+}
