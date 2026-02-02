@@ -201,3 +201,11 @@
 - [x] Reduce row height and padding in compact mode
 - [x] Save view density preference to localStorage
 - [x] Test all features work together seamlessly
+
+## Contacts Table Optimization
+- [x] Optimize Contacts table column widths to fit viewport without horizontal scrollbar
+- [x] Add column sorting functionality to Contacts table
+- [x] Implement clickable column headers with sort indicators
+- [x] Add visual indicators (up/down arrows) for active sort column
+- [x] Test sorting on all column types (text, email, phone)
+- [x] Verify table fits on standard screen sizes (1280px+)

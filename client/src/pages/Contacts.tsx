@@ -1,11 +1,11 @@
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ExternalLink, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Contacts() {
@@ -13,6 +13,8 @@ export default function Contacts() {
   const pageSize = 50;
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<any>({});
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   const utils = trpc.useUtils();
   const { data: contactsData, isLoading } = trpc.leads.getAllContactsWithAccounts.useQuery({
@@ -55,6 +57,38 @@ export default function Contacts() {
     setEditForm({});
   };
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedData = useMemo(() => {
+    if (!contactsData || !sortBy) return contactsData;
+    
+    const sorted = [...contactsData].sort((a, b) => {
+      let aVal: any = a[sortBy as keyof typeof a];
+      let bVal: any = b[sortBy as keyof typeof b];
+      
+      // Handle null/undefined values
+      if (aVal == null) aVal = '';
+      if (bVal == null) bVal = '';
+      
+      // Convert to strings for comparison
+      const aStr = String(aVal).toLowerCase();
+      const bStr = String(bVal).toLowerCase();
+      
+      if (aStr < bStr) return sortDirection === 'asc' ? -1 : 1;
+      if (aStr > bStr) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    
+    return sorted;
+  }, [contactsData, sortBy, sortDirection]);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -93,20 +127,60 @@ export default function Contacts() {
                 <Table className="min-w-full">
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[180px]">Contact Name</TableHead>
-                      <TableHead className="w-[160px]">Title</TableHead>
-                      <TableHead className="w-[100px]">Role Type</TableHead>
-                      <TableHead className="w-[200px]">Company</TableHead>
-                      <TableHead className="w-[100px]">County</TableHead>
-                      <TableHead className="w-[200px]">Email</TableHead>
-                      <TableHead className="w-[120px]">Phone</TableHead>
-                      <TableHead className="w-[120px]">Authority Score</TableHead>
-                      <TableHead className="w-[80px]">LinkedIn</TableHead>
+                      <TableHead className="w-[160px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('contactName')} className="-ml-3 h-8 font-semibold">
+                          Contact Name
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[140px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('title')} className="-ml-3 h-8 font-semibold">
+                          Title
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[90px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('roleType')} className="-ml-3 h-8 font-semibold">
+                          Role Type
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[180px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('companyName')} className="-ml-3 h-8 font-semibold">
+                          Company
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[90px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('county')} className="-ml-3 h-8 font-semibold">
+                          County
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[180px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('email')} className="-ml-3 h-8 font-semibold">
+                          Email
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[110px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('phone')} className="-ml-3 h-8 font-semibold">
+                          Phone
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[110px]">
+                        <Button variant="ghost" size="sm" onClick={() => handleSort('authorityScore')} className="-ml-3 h-8 font-semibold">
+                          Authority
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                      </TableHead>
+                      <TableHead className="w-[70px]">LinkedIn</TableHead>
                       <TableHead className="w-[100px] sticky right-0 bg-background">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {contactsData.map((data) => {
+                    {(sortedData || []).map((data) => {
                       const contact = data.contact;
                       const account = data.account;
                       
@@ -119,7 +193,7 @@ export default function Contacts() {
                           key={contact.id}
                           className={contact.roleType === "Primary" ? "bg-green-50" : ""}
                         >
-                          <TableCell className="font-medium">
+                          <TableCell className="font-medium w-[160px]">
                             {isEditing ? (
                               <Input
                                 value={editForm.contactName}
@@ -130,7 +204,7 @@ export default function Contacts() {
                               contact.contactName
                             )}
                           </TableCell>
-                          <TableCell className="max-w-xs">
+                          <TableCell className="w-[140px]">
                             {isEditing ? (
                               <Input
                                 value={editForm.title}
@@ -141,14 +215,14 @@ export default function Contacts() {
                               contact.title || "N/A"
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="w-[90px]">
                             <Badge variant={contact.roleType === "Primary" ? "default" : "secondary"}>
                               {contact.roleType}
                             </Badge>
                           </TableCell>
-                          <TableCell className="font-medium">{account.companyName}</TableCell>
-                          <TableCell>{account.county}</TableCell>
-                          <TableCell>
+                          <TableCell className="font-medium w-[180px]">{account.companyName}</TableCell>
+                          <TableCell className="w-[90px]">{account.county}</TableCell>
+                          <TableCell className="w-[180px]">
                             {isEditing ? (
                               <Input
                                 value={editForm.email}
@@ -159,7 +233,7 @@ export default function Contacts() {
                               contact.email || "N/A"
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="w-[110px]">
                             {isEditing ? (
                               <Input
                                 value={editForm.phone}
@@ -170,7 +244,7 @@ export default function Contacts() {
                               contact.phone || "N/A"
                             )}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="w-[110px]">
                             <div className="flex items-center gap-2">
                               <div className="w-16 bg-muted rounded-full h-2">
                                 <div 
@@ -181,7 +255,7 @@ export default function Contacts() {
                               <span className="text-sm">{contact.safetyDecisionAuthority}</span>
                             </div>
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="w-[70px]">
                             {isEditing ? (
                               <Input
                                 value={editForm.linkedInUrl}
