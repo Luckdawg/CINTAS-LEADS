@@ -19,7 +19,7 @@ describe("Database Operations", () => {
         phone: "404-555-0100",
         website: "https://test-manufacturing.com",
         industry: "Manufacturing",
-        safetyVertical: "Both",
+        productLines: "HearingTesting,FirstAidCabinets,AED,Training",
         employeeCountEstimated: 150,
         employeeEstimateConfidence: "High",
         dataSource: "Test",
@@ -39,7 +39,7 @@ describe("Database Operations", () => {
       expect(account).toBeDefined();
       expect(account?.companyName).toBe("Test Manufacturing Co");
       expect(account?.county).toBe("Fulton");
-      expect(account?.safetyVertical).toBe("Both");
+      expect(account?.productLines).toBe("HearingTesting,FirstAidCabinets,AED,Training");
     });
 
     it("should filter accounts by county", async () => {
@@ -51,12 +51,12 @@ describe("Database Operations", () => {
       });
     });
 
-    it("should filter accounts by safety vertical", async () => {
-      const accounts = await db.getAccounts({ safetyVertical: "Both" }, 10, 0);
+    it("should filter accounts by product lines", async () => {
+      const accounts = await db.getAccounts({ productLines: ["HearingTesting"] }, 10, 0);
       
       expect(Array.isArray(accounts)).toBe(true);
       accounts.forEach(account => {
-        expect(account.safetyVertical).toBe("Both");
+        expect(account.productLines).toContain("HearingTesting");
       });
     });
 
@@ -126,7 +126,7 @@ describe("Database Operations", () => {
       expect(typeof stats.duplicateLeads).toBe("number");
       expect(typeof stats.totalContacts).toBe("number");
       expect(typeof stats.avgContactsPerAccount).toBe("number");
-      expect(Array.isArray(stats.byVertical)).toBe(true);
+      expect(Array.isArray(stats.byProductLine)).toBe(true);
       expect(Array.isArray(stats.byCounty)).toBe(true);
     });
   });

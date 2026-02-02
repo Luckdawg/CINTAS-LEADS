@@ -23,7 +23,9 @@ export const appRouter = router({
     getAccounts: publicProcedure
       .input(z.object({
         county: z.string().optional(),
-        safetyVertical: z.enum(["FirstAidSafety", "FireProtection", "Both"]).optional(),
+        productLines: z.array(z.string()).optional(), // Multi-select product lines
+        zipCodes: z.array(z.string()).optional(), // Multi-ZIP filtering
+        westernGeorgiaOnly: z.boolean().optional(), // Filter to Western Georgia (west of I-75)
         industry: z.string().optional(),
         minEmployees: z.number().optional(),
         maxEmployees: z.number().optional(),
@@ -114,7 +116,9 @@ export const appRouter = router({
     generateExcel: publicProcedure
       .input(z.object({
         county: z.string().optional(),
-        safetyVertical: z.enum(["FirstAidSafety", "FireProtection", "Both"]).optional(),
+        productLines: z.array(z.string()).optional(),
+        zipCodes: z.array(z.string()).optional(),
+        westernGeorgiaOnly: z.boolean().optional(),
         industry: z.string().optional(),
         minEmployees: z.number().optional(),
         maxEmployees: z.number().optional(),

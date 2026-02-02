@@ -32,7 +32,7 @@ export const accounts = mysqlTable("accounts", {
   county: varchar("county", { length: 100 }).notNull(),
   city: varchar("city", { length: 100 }),
   state: varchar("state", { length: 2 }).default("GA").notNull(),
-  zipCode: varchar("zipCode", { length: 10 }),
+  zipCode: varchar("zipCode", { length: 10 }).notNull(),
   
   // Contact information
   phone: varchar("phone", { length: 50 }),
@@ -40,7 +40,8 @@ export const accounts = mysqlTable("accounts", {
   
   // Business classification
   industry: varchar("industry", { length: 200 }),
-  safetyVertical: mysqlEnum("safetyVertical", ["FirstAidSafety", "FireProtection", "Both"]).notNull(),
+  // Product lines - comma-separated list of services
+  productLines: text("productLines"), // e.g., "HearingTesting,Dosimetry,FirstAidCabinets,AED,Eyewash,Training,PPE"
   
   // Employee and revenue data
   employeeCountEstimated: int("employeeCountEstimated"),
@@ -67,7 +68,7 @@ export const accounts = mysqlTable("accounts", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (table) => ({
   countyIdx: index("county_idx").on(table.county),
-  safetyVerticalIdx: index("safety_vertical_idx").on(table.safetyVertical),
+  zipCodeIdx: index("zip_code_idx").on(table.zipCode),
   duplicateGroupIdx: index("duplicate_group_idx").on(table.duplicateGroupId),
 }));
 

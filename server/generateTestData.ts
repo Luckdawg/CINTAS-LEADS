@@ -12,27 +12,33 @@ import * as db from "./db";
 import { InsertAccount, InsertContact, InsertSourceMetadata } from "../drizzle/schema";
 import { runDeduplication } from "./deduplication";
 
-const ATLANTA_COUNTIES = [
-  "Fulton", "DeKalb", "Cobb", "Gwinnett", "Clayton",
-  "Cherokee", "Henry", "Rockdale", "Douglas", "Fayette",
+// Western Georgia counties (west of I-75)
+const WESTERN_GEORGIA_COUNTIES = [
+  "Carroll", "Coweta", "Troup", "Muscogee", "Floyd",
+  "Polk", "Haralson", "Douglas", "Paulding", "Bartow",
+];
+
+const WESTERN_GEORGIA_ZIPS = [
+  "30117", "30263", "31901", "30161", "30125", // Carrollton, Newnan, Columbus, Rome, Cedartown
+  "30180", "30134", "30120", "30701", "30103", // Villa Rica, Douglasville, Buchanan, Calhoun, Acworth
 ];
 
 const SAMPLE_COMPANIES = [
-  { name: "Atlanta Manufacturing Solutions", industry: "Manufacturing", vertical: "Both" },
-  { name: "Georgia Distribution Center", industry: "Warehousing & Distribution", vertical: "Both" },
-  { name: "Peachtree Medical Facility", industry: "Healthcare & Medical Facilities", vertical: "FirstAidSafety" },
-  { name: "Southern Construction Group", industry: "Construction & Contractors", vertical: "Both" },
-  { name: "Metro Logistics Inc", industry: "Logistics & Transportation", vertical: "FirstAidSafety" },
-  { name: "Buckhead Corporate Campus", industry: "Corporate Campuses", vertical: "FireProtection" },
-  { name: "Midtown Hotel & Conference Center", industry: "Hospitality & Entertainment Venues", vertical: "FireProtection" },
-  { name: "Georgia Tech Manufacturing Lab", industry: "Educational Institutions", vertical: "Both" },
-  { name: "Hartsfield Industrial Services", industry: "Industrial Services", vertical: "Both" },
-  { name: "Perimeter Mall Management", industry: "Retail with large facilities", vertical: "FireProtection" },
-  { name: "Decatur Warehouse Operations", industry: "Warehousing & Distribution", vertical: "Both" },
-  { name: "Marietta Medical Center", industry: "Healthcare & Medical Facilities", vertical: "FirstAidSafety" },
-  { name: "Roswell Construction LLC", industry: "Construction & Contractors", vertical: "Both" },
-  { name: "Alpharetta Tech Campus", industry: "Corporate Campuses", vertical: "FireProtection" },
-  { name: "Sandy Springs Distribution Hub", industry: "Warehousing & Distribution", vertical: "Both" },
+  { name: "Columbus Manufacturing Solutions", industry: "Manufacturing", productLines: ["HearingTesting", "Dosimetry", "PPE"] },
+  { name: "West Georgia Distribution Center", industry: "Warehousing & Distribution", productLines: ["FirstAidCabinets", "AED", "Training"] },
+  { name: "Carrollton Medical Facility", industry: "Healthcare & Medical Facilities", productLines: ["FirstAidCabinets", "AED", "Eyewash"] },
+  { name: "Rome Construction Group", industry: "Construction & Contractors", productLines: ["HearingTesting", "PPE", "Training"] },
+  { name: "LaGrange Logistics Inc", industry: "Logistics & Transportation", productLines: ["FirstAidCabinets", "Training"] },
+  { name: "Newnan Corporate Campus", industry: "Corporate Campuses", productLines: ["AED", "FirstAidCabinets", "Training"] },
+  { name: "Villa Rica Hotel & Conference Center", industry: "Hospitality & Entertainment Venues", productLines: ["AED", "Training"] },
+  { name: "Cedartown Manufacturing Lab", industry: "Educational Institutions", productLines: ["HearingTesting", "Dosimetry", "Eyewash", "Training"] },
+  { name: "Douglasville Industrial Services", industry: "Industrial Services", productLines: ["HearingTesting", "Dosimetry", "PPE", "Eyewash"] },
+  { name: "Bremen Retail Center", industry: "Retail with large facilities", productLines: ["AED", "FirstAidCabinets"] },
+  { name: "Buchanan Warehouse Operations", industry: "Warehousing & Distribution", productLines: ["FirstAidCabinets", "PPE", "Training"] },
+  { name: "Tallapoosa Medical Center", industry: "Healthcare & Medical Facilities", productLines: ["AED", "FirstAidCabinets", "Eyewash"] },
+  { name: "Calhoun Construction LLC", industry: "Construction & Contractors", productLines: ["HearingTesting", "PPE", "Training"] },
+  { name: "Rockmart Tech Campus", industry: "Corporate Campuses", productLines: ["AED", "Training"] },
+  { name: "Bowdon Distribution Hub", industry: "Warehousing & Distribution", productLines: ["FirstAidCabinets", "AED", "PPE"] },
 ];
 
 const SAMPLE_CONTACTS = [
@@ -77,7 +83,8 @@ async function generateTestAccounts(count: number = 15): Promise<number[]> {
 
   for (let i = 0; i < count; i++) {
     const company = SAMPLE_COMPANIES[i % SAMPLE_COMPANIES.length];
-    const county = randomElement(ATLANTA_COUNTIES);
+    const county = randomElement(WESTERN_GEORGIA_COUNTIES);
+    const zipCode = randomElement(WESTERN_GEORGIA_ZIPS);
     const address = generateAddress(county);
     
     const account: InsertAccount = {
@@ -85,13 +92,13 @@ async function generateTestAccounts(count: number = 15): Promise<number[]> {
       companyName: `${company.name} ${i > 14 ? `Branch ${i - 14}` : ""}`.trim(),
       address: address,
       county: county,
-      city: county === "Fulton" ? "Atlanta" : county,
+      city: county,
       state: "GA",
-      zipCode: String(randomNumber(30000, 30999)),
+      zipCode: zipCode,
       phone: generatePhoneNumber(),
       website: `https://www.${company.name.toLowerCase().replace(/\s+/g, "")}.com`,
       industry: company.industry,
-      safetyVertical: company.vertical as any,
+      productLines: company.productLines.join(','),
       employeeCountEstimated: randomNumber(50, 500),
       employeeEstimateConfidence: randomElement(["High", "Medium", "Low"]) as any,
       googleMapsPlaceId: `test_place_${uuidv4()}`,
@@ -185,7 +192,7 @@ async function generateDuplicateTestData(): Promise<void> {
       phone: generatePhoneNumber(),
       website: `https://www.${pair.original.toLowerCase().replace(/\s+/g, "")}.com`,
       industry: "Manufacturing",
-      safetyVertical: "Both",
+      productLines: "HearingTesting,FirstAidCabinets,AED,Training",
       employeeCountEstimated: 200,
       employeeEstimateConfidence: "High",
       dataSource: "TestData",
@@ -205,7 +212,7 @@ async function generateDuplicateTestData(): Promise<void> {
       phone: generatePhoneNumber(),
       website: account1.website,
       industry: "Manufacturing",
-      safetyVertical: "Both",
+      productLines: "HearingTesting,FirstAidCabinets,AED,Training",
       employeeCountEstimated: 200,
       employeeEstimateConfidence: "Medium",
       dataSource: "TestData",

@@ -131,7 +131,9 @@ export async function getAccountByUuid(uuid: string) {
 
 export interface AccountFilters {
   county?: string;
-  safetyVertical?: string;
+  productLines?: string[]; // Multi-select product lines
+  zipCodes?: string[]; // Multi-ZIP filtering
+  westernGeorgiaOnly?: boolean; // Filter to Western Georgia (west of I-75)
   industry?: string;
   minEmployees?: number;
   maxEmployees?: number;
@@ -150,8 +152,25 @@ export async function getAccounts(filters?: AccountFilters, limit = 100, offset 
     conditions.push(eq(accounts.county, filters.county));
   }
   
-  if (filters?.safetyVertical) {
-    conditions.push(eq(accounts.safetyVertical, filters.safetyVertical as any));
+  if (filters?.productLines && filters.productLines.length > 0) {
+    // Filter by product lines - check if account's productLines contains any of the selected ones
+    const productLineConditions = filters.productLines.map(pl => 
+      like(accounts.productLines, `%${pl}%`)
+    );
+    conditions.push(or(...productLineConditions));
+  }
+  
+  if (filters?.zipCodes && filters.zipCodes.length > 0) {
+    // Filter by specific ZIP codes
+    const zipConditions = filters.zipCodes.map(zip => eq(accounts.zipCode, zip));
+    conditions.push(or(...zipConditions));
+  }
+  
+  if (filters?.westernGeorgiaOnly) {
+    // Filter to Western Georgia ZIP codes (west of I-75)
+    const { WESTERN_GEORGIA_ZIPS } = await import('../shared/westernGeorgiaZips');
+    const westernZipConditions = WESTERN_GEORGIA_ZIPS.map(zip => eq(accounts.zipCode, zip));
+    conditions.push(or(...westernZipConditions));
   }
   
   if (filters?.industry) {
@@ -198,8 +217,25 @@ export async function getAccountsCount(filters?: AccountFilters) {
     conditions.push(eq(accounts.county, filters.county));
   }
   
-  if (filters?.safetyVertical) {
-    conditions.push(eq(accounts.safetyVertical, filters.safetyVertical as any));
+  if (filters?.productLines && filters.productLines.length > 0) {
+    // Filter by product lines - check if account's productLines contains any of the selected ones
+    const productLineConditions = filters.productLines.map(pl => 
+      like(accounts.productLines, `%${pl}%`)
+    );
+    conditions.push(or(...productLineConditions));
+  }
+  
+  if (filters?.zipCodes && filters.zipCodes.length > 0) {
+    // Filter by specific ZIP codes
+    const zipConditions = filters.zipCodes.map(zip => eq(accounts.zipCode, zip));
+    conditions.push(or(...zipConditions));
+  }
+  
+  if (filters?.westernGeorgiaOnly) {
+    // Filter to Western Georgia ZIP codes (west of I-75)
+    const { WESTERN_GEORGIA_ZIPS } = await import('../shared/westernGeorgiaZips');
+    const westernZipConditions = WESTERN_GEORGIA_ZIPS.map(zip => eq(accounts.zipCode, zip));
+    conditions.push(or(...westernZipConditions));
   }
   
   if (filters?.industry) {
@@ -386,13 +422,27 @@ export async function getLeadStatistics() {
     .from(accounts)
     .where(eq(accounts.possibleDuplicate, true));
   
-  const byVertical = await db
-    .select({
-      vertical: accounts.safetyVertical,
-      count: sql<number>`count(*)`,
-    })
-    .from(accounts)
-    .groupBy(accounts.safetyVertical);
+  // Count accounts by product lines
+  // Since productLines is a comma-separated string, we'll need to parse it
+  const allAccounts = await db.select({ productLines: accounts.productLines }).from(accounts);
+  const productLineStats: Record<string, number> = {};
+  
+  allAccounts.forEach(account => {
+    if (account.productLines) {
+      const lines = account.productLines.split(',');
+      lines.forEach(line => {
+        const trimmedLine = line.trim();
+        if (trimmedLine) {
+          productLineStats[trimmedLine] = (productLineStats[trimmedLine] || 0) + 1;
+        }
+      });
+    }
+  });
+  
+  const byProductLine = Object.entries(productLineStats).map(([productLine, count]) => ({
+    productLine,
+    count,
+  }));
   
   const byCounty = await db
     .select({
@@ -425,7 +475,7 @@ export async function getLeadStatistics() {
     duplicateLeads: duplicateLeads[0]?.count || 0,
     totalContacts: totalContacts[0]?.count || 0,
     avgContactsPerAccount: Number(avgContactsPerAccount[0]?.avg || 0),
-    byVertical,
+    byProductLine,
     byCounty,
   };
 }

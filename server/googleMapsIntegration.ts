@@ -74,30 +74,45 @@ export const SAFETY_CATEGORIES = {
 };
 
 /**
- * Map industry categories to safety verticals
+ * Map industry categories to product lines
+ * Returns comma-separated list of applicable product lines
  */
-export function determineSafetyVertical(industry: string, category: string): "FirstAidSafety" | "FireProtection" | "Both" {
+export function determineProductLines(industry: string, category: string): string {
   const industryLower = industry?.toLowerCase() || "";
   const categoryLower = category?.toLowerCase() || "";
+  const productLines: string[] = [];
   
-  // High-risk industries typically need both
-  const highRisk = ["manufacturing", "factory", "industrial", "warehouse", "distribution", "hospital", "medical"];
-  const hasHighRisk = highRisk.some(term => industryLower.includes(term) || categoryLower.includes(term));
-  
-  if (hasHighRisk) {
-    return "Both";
+  // Manufacturing, industrial, construction - high noise environments
+  if (["manufacturing", "factory", "industrial", "construction", "warehouse"].some(term => 
+    industryLower.includes(term) || categoryLower.includes(term))) {
+    productLines.push("HearingTesting", "Dosimetry", "PPE", "FirstAidCabinets", "Training");
   }
   
-  // Fire protection emphasis
-  const fireEmphasis = ["hotel", "event center", "mall", "retail", "restaurant"];
-  const hasFireEmphasis = fireEmphasis.some(term => industryLower.includes(term) || categoryLower.includes(term));
-  
-  if (hasFireEmphasis) {
-    return "FireProtection";
+  // Healthcare and medical facilities
+  if (["hospital", "medical", "clinic", "healthcare"].some(term => 
+    industryLower.includes(term) || categoryLower.includes(term))) {
+    productLines.push("AED", "FirstAidCabinets", "Eyewash", "Training");
   }
   
-  // Default to both for safety-relevant businesses
-  return "Both";
+  // Corporate campuses, offices, retail
+  if (["office", "corporate", "campus", "retail", "hotel", "restaurant"].some(term => 
+    industryLower.includes(term) || categoryLower.includes(term))) {
+    productLines.push("AED", "FirstAidCabinets", "Training");
+  }
+  
+  // Educational institutions
+  if (["school", "college", "university", "education"].some(term => 
+    industryLower.includes(term) || categoryLower.includes(term))) {
+    productLines.push("AED", "FirstAidCabinets", "Training");
+  }
+  
+  // Default product lines if none matched
+  if (productLines.length === 0) {
+    productLines.push("FirstAidCabinets", "Training");
+  }
+  
+  // Remove duplicates and return as comma-separated string
+  return Array.from(new Set(productLines)).join(',');
 }
 
 /**
@@ -205,8 +220,8 @@ export async function processAndSavePlace(place: any, county: string, category: 
     const types = details?.types || place.types || [];
     const industry = types.find((t: string) => !["establishment", "point_of_interest"].includes(t)) || category;
     
-    // Determine safety vertical
-    const safetyVertical = determineSafetyVertical(industry, category);
+    // Determine product lines based on industry
+    const productLines = determineProductLines(industry, category);
     
     // Extract city and zip from address
     const addressParts = (details?.formatted_address || place.formatted_address || "").split(",");
@@ -226,7 +241,7 @@ export async function processAndSavePlace(place: any, county: string, category: 
       phone: details?.formatted_phone_number || undefined,
       website: details?.website || undefined,
       industry: industry,
-      safetyVertical: safetyVertical,
+      productLines: productLines,
       googleMapsPlaceId: place.place_id || undefined,
       googleMapsUrl: place.place_id ? `https://www.google.com/maps/place/?q=place_id:${place.place_id}` : undefined,
       googleMapsRating: details?.rating ? String(details.rating) : undefined,

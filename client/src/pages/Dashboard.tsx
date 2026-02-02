@@ -34,10 +34,10 @@ export default function Dashboard() {
               <img src="/cintas-logo.png" alt="CINTAS" className="h-16" />
               <div className="border-l-2 border-border pl-6">
                 <h1 className="text-2xl font-bold text-foreground">
-                  Atlanta Metro Lead Generation
+                  Western Georgia Lead Generation
                 </h1>
                 <p className="text-muted-foreground mt-1">
-                  First Aid & Safety + Fire Protection Services
+                  First Aid & Safety Services - West of I-75
                 </p>
               </div>
             </div>
@@ -115,24 +115,20 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Coverage by Safety Vertical */}
+        {/* Coverage by Product Lines */}
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           <Card>
             <CardHeader>
-              <CardTitle>Coverage by Safety Vertical</CardTitle>
-              <CardDescription>Distribution of leads by service category</CardDescription>
+              <CardTitle>Coverage by Product Line</CardTitle>
+              <CardDescription>Distribution of leads by service offerings</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {stats?.byVertical.map((item: any) => (
-                  <div key={item.vertical} className="flex items-center justify-between">
+                {stats?.byProductLine.slice(0, 7).map((item: any, idx: number) => (
+                  <div key={item.productLine} className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        item.vertical === "Both" ? "bg-primary" :
-                        item.vertical === "FirstAidSafety" ? "bg-blue-500" :
-                        "bg-red-500"
-                      }`}></div>
-                      <span className="font-medium">{item.vertical}</span>
+                      <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: `hsl(${(idx * 360) / 7}, 70%, 50%)` }}></div>
+                      <span className="font-medium text-sm">{item.productLine}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-2xl font-bold">{item.count}</span>

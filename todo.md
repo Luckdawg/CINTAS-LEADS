@@ -82,6 +82,48 @@
 - [x] Test all Select dropdowns to ensure no errors
 
 ## GitHub Repository Sync
-- [ ] Check git status and remote configuration
-- [ ] Push code to https://github.com/Luckdawg/CINTAS-LEADS
-- [ ] Verify sync completed successfully
+- [x] Check git status and remote configuration
+- [x] Push code to https://github.com/Luckdawg/CINTAS-LEADS
+- [x] Verify sync completed successfully
+
+## Major Update - Remove Fire Protection & Add Product Line Filters
+
+### Database & Backend Updates
+- [x] Update database schema to add product_lines field (multi-select)
+- [x] Add zipCode field to accounts table
+- [x] Create Western Georgia ZIP code lookup table/constant
+- [x] Remove Fire Protection from safetyVertical enum
+- [x] Update backend query logic to support product line filtering
+- [x] Update geographic filtering from Atlanta Metro to Western Georgia (west of I-75)
+
+### Remove Fire Protection
+- [x] Remove Fire Protection from database enum
+- [x] Remove Fire Protection from API validation
+- [x] Remove Fire Protection from UI dropdowns and filters
+- [x] Remove Fire Protection from test data
+- [x] Update statistics to exclude Fire Protection
+
+### Add New Product Line Filters
+- [x] Add Hearing Testing filter
+- [x] Add Dosimetry / Noise Level Testing filter
+- [x] Add First Aid Cabinets filter
+- [x] Add AED Service filter
+- [x] Add Eyewash Station Service filter
+- [x] Add First Aid & Safety Training Classes filter
+- [x] Add Personal Protective Equipment (PPE) filter
+- [x] Implement multi-select UI for product lines
+- [x] Update backend to filter by multiple product lines
+
+### Geographic Filtering
+- [x] Define Western Georgia ZIP codes (west of I-75)
+- [x] Add ZIP code input field (multi-ZIP support)
+- [x] Add "Western Georgia" predefined region option
+- [x] Update backend to filter by ZIP codes
+- [x] Update test data with Western Georgia locations
+
+### Testing
+- [x] Update unit tests for new product line filters
+- [x] Add tests for Western Georgia geographic filtering
+- [x] Add tests for ZIP code filtering
+- [x] Verify all existing functionality works
+- [x] End-to-end testing of new filters

@@ -39,7 +39,7 @@ async function generateAccountsSheet(workbook: ExcelJS.Workbook, filters?: Accou
     { header: "Phone", key: "phone", width: 18 },
     { header: "Website", key: "website", width: 35 },
     { header: "Industry", key: "industry", width: 25 },
-    { header: "Safety Vertical", key: "safetyVertical", width: 18 },
+    { header: "Product Lines", key: "productLines", width: 50 },
     { header: "Employee Count Estimated", key: "employeeCount", width: 22 },
     { header: "Confidence", key: "confidence", width: 12 },
     { header: "LinkedIn Company URL", key: "linkedInUrl", width: 35 },
@@ -71,7 +71,7 @@ async function generateAccountsSheet(workbook: ExcelJS.Workbook, filters?: Accou
       phone: account.phone || "",
       website: account.website || "",
       industry: account.industry || "",
-      safetyVertical: account.safetyVertical,
+      productLines: account.productLines || "",
       employeeCount: account.employeeCountEstimated || "",
       confidence: account.employeeEstimateConfidence || "",
       linkedInUrl: account.linkedInCompanyUrl || "",
@@ -316,13 +316,13 @@ async function generateDataQualitySheet(workbook: ExcelJS.Workbook): Promise<voi
   
   // Section 2: Coverage by Safety Vertical
   row += 2;
-  sheet.getCell(`A${row}`).value = "Coverage by Safety Vertical";
+  sheet.getCell(`A${row}`).value = "Coverage by Product Line";
   sheet.getCell(`A${row}`).font = { size: 12, bold: true };
   sheet.getRow(row).height = 20;
   row++;
   
-  stats.byVertical.forEach((item: any) => {
-    sheet.getCell(`A${row}`).value = item.vertical;
+  stats.byProductLine.forEach((item: any) => {
+    sheet.getCell(`A${row}`).value = item.productLine;
     sheet.getCell(`B${row}`).value = item.count;
     sheet.getCell(`A${row}`).font = { bold: true };
     row++;

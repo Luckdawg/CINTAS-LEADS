@@ -10,16 +10,19 @@ import { Download, Search, Filter, ExternalLink, ArrowLeft } from "lucide-react"
 import { Link } from "wouter";
 import { toast } from "sonner";
 
-const ATLANTA_COUNTIES = [
-  "Fulton", "DeKalb", "Cobb", "Gwinnett", "Clayton",
-  "Cherokee", "Henry", "Rockdale", "Douglas", "Fayette",
-  "Paulding", "Walton", "Barrow", "Spalding", "Coweta"
+import { PRODUCT_LINES, WESTERN_GEORGIA_ZIPS } from "../../../shared/westernGeorgiaZips";
+
+const WESTERN_GEORGIA_COUNTIES = [
+  "Carroll", "Coweta", "Troup", "Muscogee", "Floyd",
+  "Polk", "Haralson", "Douglas", "Paulding", "Bartow",
 ];
 
 export default function Leads() {
   const [filters, setFilters] = useState({
     county: "all",
-    safetyVertical: "all",
+    productLines: [] as string[],
+    zipCodes: [] as string[],
+    westernGeorgiaOnly: false,
     searchQuery: "",
     duplicatesOnly: false,
     minEmployees: undefined as number | undefined,
@@ -29,10 +32,14 @@ export default function Leads() {
   const pageSize = 50;
 
   const { data, isLoading, refetch } = trpc.leads.getAccounts.useQuery({
-    ...filters,
     county: filters.county === "all" ? undefined : filters.county,
-    safetyVertical: filters.safetyVertical === "all" ? undefined : (filters.safetyVertical as any),
+    productLines: filters.productLines.length > 0 ? filters.productLines : undefined,
+    zipCodes: filters.zipCodes.length > 0 ? filters.zipCodes : undefined,
+    westernGeorgiaOnly: filters.westernGeorgiaOnly || undefined,
     searchQuery: filters.searchQuery || undefined,
+    duplicatesOnly: filters.duplicatesOnly || undefined,
+    minEmployees: filters.minEmployees,
+    maxEmployees: filters.maxEmployees,
     limit: pageSize,
     offset: page * pageSize,
   });
@@ -67,7 +74,9 @@ export default function Leads() {
   const handleExport = () => {
     exportMutation.mutate({
       county: filters.county === "all" ? undefined : filters.county,
-      safetyVertical: filters.safetyVertical === "all" ? undefined : (filters.safetyVertical as any),
+      productLines: filters.productLines.length > 0 ? filters.productLines : undefined,
+      zipCodes: filters.zipCodes.length > 0 ? filters.zipCodes : undefined,
+      westernGeorgiaOnly: filters.westernGeorgiaOnly || undefined,
       searchQuery: filters.searchQuery || undefined,
       duplicatesOnly: filters.duplicatesOnly || undefined,
       minEmployees: filters.minEmployees,
@@ -83,7 +92,9 @@ export default function Leads() {
   const clearFilters = () => {
     setFilters({
       county: "all",
-      safetyVertical: "all",
+      productLines: [],
+      zipCodes: [],
+      westernGeorgiaOnly: false,
       searchQuery: "",
       duplicatesOnly: false,
       minEmployees: undefined,
@@ -162,27 +173,64 @@ export default function Leads() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All counties</SelectItem>
-                    {ATLANTA_COUNTIES.map(county => (
+                    {WESTERN_GEORGIA_COUNTIES.map(county => (
                       <SelectItem key={county} value={county}>{county}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Safety Vertical */}
+              {/* Product Lines */}
               <div className="space-y-2">
-                <label className="text-sm font-medium">Safety Vertical</label>
-                <Select value={filters.safetyVertical} onValueChange={(v) => handleFilterChange("safetyVertical", v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All verticals" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All verticals</SelectItem>
-                    <SelectItem value="FirstAidSafety">First Aid & Safety</SelectItem>
-                    <SelectItem value="FireProtection">Fire Protection</SelectItem>
-                    <SelectItem value="Both">Both</SelectItem>
-                  </SelectContent>
-                </Select>
+                <label className="text-sm font-medium">Product Lines</label>
+                <div className="space-y-1 max-h-48 overflow-y-auto border rounded-md p-2">
+                  {PRODUCT_LINES.map(pl => (
+                    <label key={pl.value} className="flex items-center space-x-2 cursor-pointer hover:bg-accent p-1 rounded">
+                      <input
+                        type="checkbox"
+                        checked={filters.productLines.includes(pl.value)}
+                        onChange={(e) => {
+                          const newProductLines = e.target.checked
+                            ? [...filters.productLines, pl.value]
+                            : filters.productLines.filter(p => p !== pl.value);
+                          handleFilterChange("productLines", newProductLines);
+                        }}
+                        className="rounded"
+                      />
+                      <span className="text-sm">{pl.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Western Georgia Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Geographic Region</label>
+                <Button
+                  variant={filters.westernGeorgiaOnly ? "default" : "outline"}
+                  className="w-full"
+                  onClick={() => handleFilterChange("westernGeorgiaOnly", !filters.westernGeorgiaOnly)}
+                >
+                  {filters.westernGeorgiaOnly ? "Western GA Only" : "All Regions"}
+                </Button>
+              </div>
+
+              {/* ZIP Code Filter */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">ZIP Codes (comma-separated)</label>
+                <Input
+                  placeholder="e.g., 30117, 30263, 31901"
+                  value={filters.zipCodes.join(', ')}
+                  onChange={(e) => {
+                    const zips = e.target.value.split(',').map(z => z.trim()).filter(z => z.length > 0);
+                    handleFilterChange("zipCodes", zips);
+                  }}
+                />
+                {filters.zipCodes.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Filtering by {filters.zipCodes.length} ZIP code{filters.zipCodes.length > 1 ? 's' : ''}
+                  </p>
+                )}
               </div>
 
               {/* Duplicates Only */}
@@ -219,7 +267,7 @@ export default function Leads() {
                       <TableHead>Company Name</TableHead>
                       <TableHead>Address</TableHead>
                       <TableHead>County</TableHead>
-                      <TableHead>Safety Vertical</TableHead>
+                      <TableHead>Product Lines</TableHead>
                       <TableHead>Employees</TableHead>
                       <TableHead>Phone</TableHead>
                       <TableHead>Links</TableHead>
@@ -233,13 +281,16 @@ export default function Leads() {
                         <TableCell className="max-w-xs truncate">{account.address}</TableCell>
                         <TableCell>{account.county}</TableCell>
                         <TableCell>
-                          <Badge variant={
-                            account.safetyVertical === "Both" ? "default" :
-                            account.safetyVertical === "FirstAidSafety" ? "secondary" :
-                            "outline"
-                          }>
-                            {account.safetyVertical}
-                          </Badge>
+                          <div className="flex flex-wrap gap-1 max-w-xs">
+                            {account.productLines?.split(',').slice(0, 3).map((pl, idx) => (
+                              <Badge key={idx} variant="secondary" className="text-xs">
+                                {PRODUCT_LINES.find(p => p.value === pl.trim())?.label || pl.trim()}
+                              </Badge>
+                            ))}
+                            {account.productLines && account.productLines.split(',').length > 3 && (
+                              <Badge variant="outline" className="text-xs">+{account.productLines.split(',').length - 3}</Badge>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           {account.employeeCountEstimated ? (
