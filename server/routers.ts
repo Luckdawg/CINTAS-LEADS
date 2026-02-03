@@ -113,6 +113,26 @@ export const appRouter = router({
         return { success: true };
       }),
 
+    // Delete account (lead)
+    deleteAccount: publicProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deleteAccount(input.id);
+        return { success: true };
+      }),
+
+    // Delete contact
+    deleteContact: publicProcedure
+      .input(z.object({
+        id: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        await db.deleteContact(input.id);
+        return { success: true };
+      }),
+
     // Get duplicate groups
     getDuplicateGroups: publicProcedure
       .query(async () => {
@@ -149,7 +169,7 @@ export const appRouter = router({
   }),
 
   export: router({
-    // Generate and download Excel workbook
+    // Generate and download Excel workbook for leads
     generateExcel: publicProcedure
       .input(z.object({
         county: z.string().optional(),
@@ -171,24 +191,44 @@ export const appRouter = router({
         };
       }),
 
-    // Delete account (lead)
-    deleteAccount: publicProcedure
+    // Generate and download Excel workbook for contacts only
+    generateContactsExcel: publicProcedure
       .input(z.object({
-        id: z.number(),
+        county: z.string().optional(),
+        productLines: z.array(z.string()).optional(),
+        zipCodes: z.array(z.string()).optional(),
+        westernGeorgiaOnly: z.boolean().optional(),
+        searchQuery: z.string().optional(),
       }))
       .mutation(async ({ input }) => {
-        await db.deleteAccount(input.id);
-        return { success: true };
+        const { generateContactsWorkbookBuffer } = await import("./excelGenerator");
+        const buffer = await generateContactsWorkbookBuffer(input);
+        return {
+          data: buffer.toString('base64'),
+          filename: `CINTAS_Contacts_${new Date().toISOString().split('T')[0]}.xlsx`,
+        };
       }),
 
-    // Delete contact
-    deleteContact: publicProcedure
+    // Upload and parse Excel file for leads
+    uploadLeads: publicProcedure
       .input(z.object({
-        id: z.number(),
+        fileData: z.string(), // base64 encoded Excel file
       }))
       .mutation(async ({ input }) => {
-        await db.deleteContact(input.id);
-        return { success: true };
+        const { parseLeadsExcel } = await import("./excelParser");
+        const result = await parseLeadsExcel(input.fileData);
+        return result;
+      }),
+
+    // Upload and parse Excel file for contacts
+    uploadContacts: publicProcedure
+      .input(z.object({
+        fileData: z.string(), // base64 encoded Excel file
+      }))
+      .mutation(async ({ input }) => {
+        const { parseContactsExcel } = await import("./excelParser");
+        const result = await parseContactsExcel(input.fileData);
+        return result;
       }),
   }),
 });

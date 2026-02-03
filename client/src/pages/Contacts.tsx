@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown, Building2, MapPin, Phone, Mail, User, Award, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Edit, Save, X, ArrowUpDown, ArrowUp, ArrowDown, Building2, MapPin, Phone, Mail, User, Award, Trash2, Download, Upload } from "lucide-react";
+import { toast } from "sonner";
 import { Link } from "wouter";
 import Navigation from "@/components/Navigation";
 
@@ -36,6 +37,75 @@ export default function Contacts() {
       utils.leads.getAllContactsWithAccounts.invalidate();
     },
   });
+
+  const exportMutation = trpc.export.generateContactsExcel.useMutation({
+    onSuccess: (result: any) => {
+      // Create a download link
+      const link = document.createElement('a');
+      const blob = new Blob([Uint8Array.from(atob(result.data), c => c.charCodeAt(0))], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      link.href = URL.createObjectURL(blob);
+      link.download = result.filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(link.href);
+      toast.success("Excel file generated successfully!");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to generate Excel: ${error.message}`);
+    }
+  });
+
+  const uploadMutation = trpc.export.uploadContacts.useMutation({
+    onSuccess: (result: any) => {
+      if (result.success) {
+        toast.success(result.message);
+        utils.leads.getAllContactsWithAccounts.invalidate();
+      } else {
+        toast.error(result.message);
+        if (result.errors.length > 0) {
+          console.error('Upload errors:', result.errors);
+        }
+      }
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to upload file: ${error.message}`);
+    }
+  });
+
+  const handleExport = () => {
+    exportMutation.mutate({});
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      toast.error('Please upload an Excel file (.xlsx or .xls)');
+      return;
+    }
+
+    // Read file as base64
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const base64 = e.target?.result as string;
+        const base64Data = base64.split(',')[1]; // Remove data:application/... prefix
+        
+        uploadMutation.mutate({ fileData: base64Data });
+      } catch (error: any) {
+        toast.error(`Failed to read file: ${error.message}`);
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input so same file can be uploaded again
+    event.target.value = '';
+  };
 
   const handleEdit = (contact: any) => {
     setEditingId(contact.id);
@@ -122,10 +192,40 @@ export default function Contacts() {
       {/* Page Header */}
       <div className="border-b bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="container py-4">
-          <h1 className="text-2xl font-bold text-gray-900">Decision Maker Contacts</h1>
-          <p className="text-gray-600 mt-1">
-            Safety and operations contacts for each business
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Decision Maker Contacts</h1>
+              <p className="text-gray-600 mt-1">
+                Safety and operations contacts for each business
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleExport} 
+                disabled={exportMutation.isPending}
+                size="sm"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {exportMutation.isPending ? "Generating..." : "Export to Excel"}
+              </Button>
+              <Button 
+                onClick={() => document.getElementById('contacts-file-input')?.click()} 
+                disabled={uploadMutation.isPending}
+                size="sm"
+                variant="outline"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {uploadMutation.isPending ? "Uploading..." : "Upload Excel"}
+              </Button>
+              <input
+                id="contacts-file-input"
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

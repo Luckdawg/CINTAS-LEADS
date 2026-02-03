@@ -283,3 +283,21 @@
 - [x] Test delete functionality on multiple records
 - [x] Verify text wrapping works perfectly with long content
 - [x] Ensure tables look professional and readable
+
+## Add Excel Import/Export Features
+- [x] Add Excel export button to Contacts page
+- [x] Create exportContacts tRPC mutation in server/routers.ts
+- [x] Implement Excel generation for Contacts data
+- [x] Add Excel upload button to Business Leads page
+- [x] Add Excel upload button to Contacts page
+- [x] Create uploadLeads tRPC mutation for parsing Excel files
+- [x] Create uploadContacts tRPC mutation for parsing Excel files
+- [x] Install xlsx library for Excel parsing
+- [x] Implement file upload UI with file input support
+- [x] Add validation for uploaded Excel files
+- [x] Handle duplicate detection during upload
+- [x] Show upload progress and success/error messages
+- [x] Test Excel export for Contacts button visibility
+- [x] Test Excel upload for Leads button visibility
+- [x] Test Excel upload for Contacts button visibility
+- [x] Verify UI consistency across both pages

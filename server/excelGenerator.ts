@@ -395,3 +395,20 @@ export async function saveLeadsWorkbook(filepath: string, filters?: AccountFilte
   await workbook.xlsx.writeFile(filepath);
   console.log(`✓ Excel workbook saved to: ${filepath}`);
 }
+
+/**
+ * Generate Excel workbook buffer for contacts only
+ */
+export async function generateContactsWorkbookBuffer(filters?: AccountFilters): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  
+  workbook.creator = "CINTAS Lead Generation System";
+  workbook.created = new Date();
+  workbook.modified = new Date();
+  
+  // Generate contacts sheet only
+  await generateContactsSheet(workbook, filters);
+  
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer);
+}

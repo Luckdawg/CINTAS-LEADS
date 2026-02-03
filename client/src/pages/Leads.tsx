@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Download, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2, Building2, MapPin, Phone, Users, Package, Trash2 } from "lucide-react";
+import { Download, Upload, Search, Filter, ExternalLink, ArrowLeft, ArrowUpDown, ArrowUp, ArrowDown, Eye, EyeOff, Maximize2, Minimize2, Building2, MapPin, Phone, Users, Package, Trash2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuTrigger, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Link } from "wouter";
 import { useEffect } from "react";
@@ -161,8 +161,25 @@ export default function Leads() {
       utils.leads.getAccounts.invalidate();
     },
     onError: (error: any) => {
-      toast.error(error.message || "Failed to delete lead");
+      toast.error(`Failed to delete lead: ${error.message}`);
+    }
+  });
+
+  const uploadMutation = trpc.export.uploadLeads.useMutation({
+    onSuccess: (result: any) => {
+      if (result.success) {
+        toast.success(result.message);
+        utils.leads.getAccounts.invalidate();
+      } else {
+        toast.error(result.message);
+        if (result.errors.length > 0) {
+          console.error('Upload errors:', result.errors);
+        }
+      }
     },
+    onError: (error: any) => {
+      toast.error(`Failed to upload file: ${error.message}`);
+    }
   });
 
   const updateMutation = trpc.leads.updateAccount.useMutation({
@@ -206,6 +223,34 @@ export default function Leads() {
       minEmployees: filters.minEmployees,
       maxEmployees: filters.maxEmployees,
     });
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      toast.error('Please upload an Excel file (.xlsx or .xls)');
+      return;
+    }
+
+    // Read file as base64
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const base64 = e.target?.result as string;
+        const base64Data = base64.split(',')[1]; // Remove data:application/... prefix
+        
+        uploadMutation.mutate({ fileData: base64Data });
+      } catch (error: any) {
+        toast.error(`Failed to read file: ${error.message}`);
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input so same file can be uploaded again
+    event.target.value = '';
   };
 
   const handleSort = (column: string) => {
@@ -334,6 +379,22 @@ export default function Leads() {
                 <Download className="h-4 w-4 mr-2" />
                 {exportMutation.isPending ? "Generating..." : "Export to Excel"}
               </Button>
+              <Button 
+                onClick={() => document.getElementById('leads-file-input')?.click()} 
+                disabled={uploadMutation.isPending}
+                size="sm"
+                variant="outline"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {uploadMutation.isPending ? "Uploading..." : "Upload Excel"}
+              </Button>
+              <input
+                id="leads-file-input"
+                type="file"
+                accept=".xlsx,.xls"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
             </div>
           </div>
         </div>
